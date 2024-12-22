@@ -11,7 +11,7 @@ The first thing I usually do is change the `Game1` class to `GameRoot`. This is 
 ## Scene management
 This section my main focus is on keeping the core game loop as simple as possible. The game may have a title screen, options and various game modes; it would become messy if all these are handled in our GameRoot- so it is best to offload them to a separate class. So how to handle this?
 
-#### Scenes
+### Scenes
 First let's start by the concept: Let's say we have a Title scene, and Options scene and a Gameplay scene. We can see these scenes as a stack of cards. The Title card is shown, we put if on the table. If the player starts a game, we put the Gameplay card on top of the stack of cards. Game over? Easy, remove the Gameplay card from the stack and the title is shown.
 
 So let's implement the scenemanager as using a `Stack`! By simply `Push()` new scenes and `Pop()` old scenes we can manipulate the active scene. Also the scene that is on top can be looked at using `Peek()`, so our basic scene management look like this:
@@ -66,7 +66,7 @@ public class SceneManager
     }
 }
 ```
-
+### Example usage
 Next an example usage- this assumes you have a `TitleScene` class that implements the `IScene` interface:
 
 In `GameRoot` (the class formerly known as `Game1`):
@@ -108,3 +108,27 @@ In `GameRoot` (the class formerly known as `Game1`):
 Inside the TitleScene, when a player starts a game, simply push the game scene to the `GameRoot.SceneManager` and pop it when it is done! 
 
 That's it! This way we can pushing and popping scenes and the top of the stack will be the one that's active! This class can be expanded with cleanup code- for example call a `OnPop()` method right before the scene is popped. Or a `OnWakeUp()` method that is called if a lower scene in the stack becomes the new top scene.
+
+## Conditional Compilation Symbols
+Another thing that I often use are the conditional symbols. In Visual Studio you can find these under the properties in your project, under *Build*. The most common one is the `DEBUG` variable. Below is an example usage in the GameRoot initialize:
+
+```csharp
+        protected override void Initialize()
+        {
+
+#if DEBUG
+            _graphics.PreferredBackBufferWidth = 1920;
+            _graphics.PreferredBackBufferHeight = 1080;
+            _graphics.IsFullScreen = false;
+#else
+            _graphics.PreferredBackBufferWidth = GraphicsDevice.Adapter.CurrentDisplayMode.Width;
+            _graphics.PreferredBackBufferHeight = GraphicsDevice.Adapter.CurrentDisplayMode.Height;
+            _graphics.IsFullScreen = true;
+#endif
+            _graphics.ApplyChanges();
+
+            ///...
+            base.Initialize();
+        }
+```
+This example will run the game windowed in debug mode, and fullscreen- default resolution in release mode. Another example would be only showing a frames-per-second counter in debug mode.
