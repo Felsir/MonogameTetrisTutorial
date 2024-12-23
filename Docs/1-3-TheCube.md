@@ -224,3 +224,5 @@ Change the update and draw functions like this:
 
 Run the code, and the cube should be spinning! 
 
+#### Continue
+Next step: [Tetriminos](2-1-Tetriminos.md).

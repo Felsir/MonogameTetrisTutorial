@@ -135,3 +135,6 @@ Another thing that I often use are the conditional symbols. In Visual Studio you
         }
 ```
 This example will run the game windowed in debug mode, and fullscreen- default resolution in release mode. Another example would be only showing a frames-per-second counter in debug mode.
+
+#### Continue
+Next step: [3D basics](1-2-ThreeDeeBasics.md).
