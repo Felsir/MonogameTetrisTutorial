@@ -3,7 +3,10 @@ In this part we set up our Monogame project and add a few basic concepts, these 
 It is by no means a "you should do it like this" and you are free to skip it. It serves as an indication on how I structure my code. Ofcourse, if you are using other Monogame libraries such as [Monogame.Extended](https://github.com/craftworkgames/MonoGame.Extended) or [Nez](https://github.com/prime31/Nez), you may want to do things differently- if you are already that advanced, skipping this section will be fine!
 
 ## Create the project
-First let's start with a blank Monogame project. For this tutorial I use the Desktop DX version, but most stuff will translate to any project type.
+First let's start with a blank Monogame project. For this tutorial I use the Desktop DX version, but most stuff will translate to any project type. I assume you already know how to do this- otherwise, please have a look [here](https://docs.monogame.net/articles/getting_started/index.html).
+
+# My way of work
+Some of the following sections are personal preference. It might be worth reading just for glimpse into my mind, or just for fun. If you are an experienced Monogamer, you might have different tricks so feel free to skip!
 
 ## The GameRoot
 The first thing I usually do is change the `Game1` class to `GameRoot`. This is optional, I just don't like the template feel of a class named "Game1". In Visual Studio, you can rightclick the filename `Game1.cs` pick *Rename* and change the name. This way the references should also change. Easy!
