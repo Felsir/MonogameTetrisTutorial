@@ -1,0 +1,70 @@
+# User-specific files
+.vscode/
+.vs/
+*.user
+*.userosscache
+*.suo
+
+# MonoGame and Visual Studio Build Artifacts
+bin/
+obj/
+*.dll
+*.pdb
+*.exe
+*.app
+*.apk
+*.lib
+*.mdb
+*.cache
+*.ilk
+*.iobj
+*.ipdb
+*.log
+*.o
+*.obj
+*.pch
+*.pgc
+*.pgd
+*.rsp
+*.sbr
+*.tmp
+*.tlog
+*.log.*
+
+# MonoGame and Content Pipeline
+*.xnb
+
+# Visual Studio Code workspace
+*.code-workspace
+
+# Other files
+*.tlog
+*.idb
+*.ipch
+*.opensdf
+*.sdf
+
+# OS-generated files
+.DS_Store
+Thumbs.db
+ehthumbs.db
+desktop.ini
+
+# Backup files
+*.bak
+*.swp
+
+# Temporary files
+*.tmp
+*.temp
+~$*
+
+# Crash dumps
+*.dmp
+
+# MonoGame-specific exclusions
+Pipeline.obj/
+Pipeline.exe/
+
+# Include README.md
+!.gitignore

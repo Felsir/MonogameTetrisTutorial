@@ -69,7 +69,7 @@ public class Camera
     private void CalculateMatrices()
     {
         _view = Matrix.CreateLookAt(_position, _target, Vector3.Up);
-        float aspect = _screenWidth/_screenHeight;
+        float aspect = (float)_screenWidth/(float)_screenHeight;
         _projection = Matrix.CreatePerspectiveFieldOfView(_fieldOfView, aspect, nearPlane, farPlane);
     }
 
@@ -102,4 +102,11 @@ public class Camera
     }
 }
 ```
-The camera we need for this project is very simple- it doesn't need to move much. We point the camera at the origin and we're ready to view some 3D objects!
+The camera we need for this project is very simple- it doesn't need to move much. We point the camera at the origin and we're almost ready to view some 3D objects!
+
+## Shaders
+Yes, we cannot go 3D without discussing shaders. Monogame comes with a built in shader called `BasicEffect`. We can use that one and create our game. But what is a shader?
+
+A shader is a small program that runs on the videocard- the GPU. In most cases it uses two steps: the Vertex shader and the Fragment (or Pixel) shader. The Vertex shader calculates based on the 3D object data what pixels onscreen are affected. The pixel shader in turn calculates for each pixel what color that pixel should be.
+
+For now, we'll use the `BasicEffect` built in by Monogame, and revisit the shader topic later!
