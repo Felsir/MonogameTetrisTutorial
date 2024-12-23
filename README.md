@@ -9,8 +9,8 @@ This tutorial (or "how did he do this?") aims to reproduce the game. The ruleset
 1. Some base Monogame stuff:
    * [Game Engine basics](Docs/1-1-GameEngineBasics.md)
    * [3D basics](Docs/1-2-ThreeDeeBasics.md)
-   * The cube- our basis for the shapes
-   * Sourcecode for Chapter 1
+   * [The cube- our basis for the shapes](Docs/1-3-TheCube.md)
+   * [Sourcecode for Chapter 1](https://github.com/Felsir/MonogameTetrisTutorial/tree/main/src)
 
 2. Gameplay
    * Tetriminoes
