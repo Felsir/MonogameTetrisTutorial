@@ -411,7 +411,7 @@ Now the `Title` scene as in chapter 1 can be modified to create a tetrimino and 
     }
 ```
 
-This should result in the blue L-piece showing:
+This should result in the blue J-piece showing:
 
 <img src="Assets/Lpiece-Blue.png" width="30%" style="display: block; margin: 0 auto;" alt="The blue L-piece">
 
