@@ -17,6 +17,7 @@ The core of the game are these shapes you can rotate and fit together. These sha
     }
 ```
 
+## Shapes
 We define the shape in each of the orientations by a pattern of booleans.
 
 Let's have a look at the T tetrimono, it consists of 4 shapes- one for each orientation:
@@ -64,6 +65,7 @@ To make things a bit easier, this constructor takes a set of strings to construc
         }
 ```
 
+## Tetrimino class
 And the shapes together are representing a tetrimino.
 ```csharp
     internal class Tetrimino
@@ -113,6 +115,7 @@ And the shapes together are representing a tetrimino.
     }
 ```
 
+## The factory
 To produce a bunch of these pieces we're going to use a factory class. A factory is a pattern that instantiates a new object and sets the right properties for you. Look at the code below to see what I mean:
 ```csharp
     internal class TetriminoFactory
@@ -341,39 +344,75 @@ To produce a bunch of these pieces we're going to use a factory class. A factory
 ```
 Now, whenever we need a tetrimino, we can ask the factory for a type! Very convenient!
 
+## Drawing the tetrimino
 Finally we want to draw the tetrimino, so let's add the Draw method to the tetrimono class:
 ```csharp
-    public void Draw(Vector3 position)
-    {
-        for (int y = 0; y < CurrentShape.shapeBit.Length; y++)
+        public void Draw(Matrix world)
         {
-
-            for (int x = 0; x < CurrentShape.shapeBit[y].Length; x++)
+            for (int y = 0; y < CurrentShape.shapeBit.Length; y++)
             {
-                if (CurrentShape.shapeBit[y][x] == false)
-                    continue;
-                
-                foreach (ModelMesh m in Assets.Models.CubeObject.Meshes)
+
+                for (int x = 0; x < CurrentShape.shapeBit[y].Length; x++)
                 {
-                    foreach (ModelMeshPart part in m.MeshParts)
+                    if (CurrentShape.shapeBit[y][x] == false)
+                        continue;
+
+                    foreach (ModelMesh m in Assets.Models.CubeObject.Meshes)
                     {
-                        part.Effect = GameRoot.BasicEffect;
+                        foreach (ModelMeshPart part in m.MeshParts)
+                        {
+                            part.Effect = GameRoot.BasicEffect;
 
-                        GameRoot.BasicEffect.World = 
-                            Matrix.CreateTranslation(position) * 
-                            Matrix.CreateTranslation(0.2f * x, 0.2f * -y, 0);
-                        
-                        GameRoot.BasicEffect.DiffuseColor = Color.ToVector3();
-
+                            GameRoot.BasicEffect.World = Matrix.CreateTranslation(0.2f * x, 0.2f * -y, 0) * world ;
+                            GameRoot.BasicEffect.DiffuseColor = Color.ToVector3();
+                        }
+                        m.Draw();
                     }
-                    m.Draw();
                 }
             }
         }
+
+```
+Note how we have a translation on top of the `world` parameter. The first one is the topleft corner of the tetromino piece, determined by the `world` variable. Next translation is based on the `x` and `y` of the shape pattern- keep these two things in mind: our cube has the 0.2 unit dimensions (hence th `0.2f` in the formula) and y downwards is negative (which is different in 2D where down usually means an increment!)
+
+## Putting it together
+Now the `Title` scene as in chapter 1 can be modified to create a tetrimino and rotate it gently- replacing the single cube:
+
+```csharp
+    internal class TitleScreen : IScene
+    {
+        // Let's rotate the cube for a nice visual effect.
+        private float _angle;
+        private Matrix _world;
+
+        private Tetrimino.Tetrimino _tetrimino;
+
+        public TitleScreen() 
+        { 
+            TetriminoFactory factory = new TetriminoFactory();
+            _tetrimino = factory.Generate(Tetriminoes.J);
+        }
+
+        public void Update(GameTime gameTime)
+        {
+            // Increase the angle framerate independant:
+            // 0.75 radians per second, also keep the rotation within the 2 PI bound.
+            _angle += 0.75f * (float)gameTime.ElapsedGameTime.TotalSeconds;
+            _angle %= MathHelper.TwoPi;
+
+            _world= Matrix.CreateScale(5) * Matrix.CreateRotationY(_angle) * Matrix.CreateTranslation(0, 0, -3f);
+        }
+
+
+        public void Draw(SpriteBatch spriteBatch, GameTime gameTime)
+        {
+            _tetrimino.Draw(_world);
+        }
     }
 ```
-Note how we have two translations! The first one is the topleft corner of the tetromino piece, determined by the `position` variable. Next translation is based on the `x` and `y` of the shape pattern- keep these two things in mind: our cube has the 0.2 unit dimensions (hence th `0.2f` in the formula) and y downwards is negative (which is different in 2D where down usually means an increment!).
 
+This should result in the blue L-piece showing:
+<img src="Assets/Lpiece-Blue.png" width="30%" style="display: block; margin: 0 auto;" alt="The blue L-piece">
 
 
 
