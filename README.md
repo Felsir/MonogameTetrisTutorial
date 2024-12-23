@@ -13,7 +13,7 @@ This tutorial (or "how did he do this?") aims to reproduce the game. The ruleset
    * [Sourcecode for Chapter 1](https://github.com/Felsir/MonogameTetrisTutorial/tree/main/src)
 
 2. Gameplay
-   * Tetriminoes
+   * [Tetriminoes](Docs/2-1-Tetriminos.md)
    * The Grid
    * Movement of pieces
    * Clearing lines

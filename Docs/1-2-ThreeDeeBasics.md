@@ -107,6 +107,6 @@ The camera we need for this project is very simple- it doesn't need to move much
 ## Shaders
 Yes, we cannot go 3D without discussing shaders. Monogame comes with a built in shader called `BasicEffect`. We can use that one and create our game. But what is a shader?
 
-A shader is a small program that runs on the videocard- the GPU. In most cases it uses two steps: the Vertex shader and the Fragment (or Pixel) shader. The Vertex shader calculates based on the 3D object data what pixels onscreen are affected. The pixel shader in turn calculates for each pixel what color that pixel should be.
+A shader is a small program that runs on the videocard- the GPU. In most cases it uses two steps: the Vertex shader and the Fragment (or Pixel) shader. The Vertex shader calculates based on the 3D object data what pixels onscreen are affected. The pixel shader in turn calculates for each pixel what color that pixel should be. If you really want to do a deep dive, I highly recommend watching [this video](https://www.youtube.com/watch?v=C8YtdC8mxTU).
 
 For now, we'll use the `BasicEffect` built in by Monogame, and revisit the shader topic later!
