@@ -415,5 +415,6 @@ This should result in the blue J-piece showing:
 
 <img src="Assets/Jpiece-Blue.png" width="30%" style="display: block; margin: 0 auto;" alt="The blue L-piece">
 
-
+#### Continue
+Next step: [The Grid](2-2-TheGrid.md).
 
