@@ -21,9 +21,18 @@ Total 73 KB (or 0.071 MB) in other words, we save 99% of data and 999 drawcalls!
 
 ## Instancing
 Monogame doesn't do instancing out of the box- it does have the basic tools in the toolbox to do it though. So what do we need:
--  a vertexbuffer that contains the mesh data of the object we want to instance.
+- a vertexbuffer that contains the mesh data of the object we want to instance.
 - a datastructure that holds our instance specific data, in such format the GPU can understand.
 - a shader that can process the data.
+- a way to 'batch' all the cubes we want to draw.
+
+In essence the process is similar to the way the `spriteBatch`works. You open the batch by `Begin()`, draw your sprites and `End()` the batch- which tells Monogame to send everything to the GPU. So the drawing process looks like this:
+1. Prepare: Read the model into a vertex buffer
+2. Prepare data structures
+3. Reset the instance data (similar to `spriteBatch.Begin()`)
+4. Set all cube drawing data (similar to `spriteBatch.Draw()`)
+5. Send all cube data to the GPU (similar to `spriteBatch.End()`)
+6. Back to 3 for the next frame!
 
 Let's have a look at each component:
 
@@ -99,13 +108,120 @@ This produces the following declaration for a Matrix and Color component:
 ```
 Note how each new piece of the declaration increase by the 16 bytes needed for the previous row. Basically row 3 starts 48 bytes from the start.
 
-Now we need something to store this data in so we can transport it to the GPU. For this we're going to use a `DynamicVertexBuffer`- it tells Monogame and the GPU that this is a buffer optimised for writing, as we are going to rewrite the data every frame (in each frame the data can be different).
-
-We also need to reserve space in the buffer- for now let's reserve space for 2500 cubes.
+This is the datastructure for each cube instance on the GPU. Now it is important that our data structure matches what we're doing. So let's create a struct with the same stride:
 
 ```csharp
-instanceBuffer = new DynamicVertexBuffer(_gd, instanceVertexDeclaration, 2500, BufferUsage.WriteOnly);
+    internal struct CubeInstanceData
+    {
+        public Matrix World; //float4x4
+        public Vector4 CustomColor; // RGBA color
+    }
 ```
 
+Now we need something to store this data in so we can transport it to the GPU. For this we're going to use a `DynamicVertexBuffer`- it tells Monogame and the GPU that this is a buffer optimised for writing, as we are going to rewrite the data every frame (in each frame the data can be different).
 
+We also need to reserve space in the buffer- for now let's reserve space for 1500 cubes. You could create a dynamic list, but for this example let's stick to this.
+
+```csharp
+        private DynamicVertexBuffer _instanceBuffer;
+        private CubeInstanceData[] _instanceData = new CubeInstanceData[1500]; //reserve some space
+
+        public override void LoadContent()
+        {
+            /// ...
+
+            _instanceBuffer = new DynamicVertexBuffer(GraphicsDevice, instanceVertexDeclaration, _instanceData.Length, BufferUsage.WriteOnly);
+
+            /// ...
+        }
+```
+### The Shader
+The shader is the basic shader with a few changes.
+The major change is the Vertex shader- this is the entry point for the shader that accepts the data from the instance data:
+```hlsl
+VertexShaderOutput MainVS(VertexShaderInput input, 
+float4 WorldRow1 : POSITION1, float4 WorldRow2 : POSITION2, float4 WorldRow3 : POSITION3, float4 WorldRow4 : POSITION4, 
+float4 CustomColor : COLOR0)
+{
+    // We received our regular model data via VertexShaderInput input,
+    // the additional instance parameters are in WorldRow1-4 and CustomColor.
+    // Let's construct the Matrix:
+
+    float4x4 InstanceWorld = float4x4(WorldRow1, WorldRow2, WorldRow3, WorldRow4);
+
+    // ...
+}
+```
+The shader now processes each triangle per each instance! We can do the same calculations we used to do for a single cube, except we now use the `InstanceWorld` variable. Since our pixel shader needs the `CustomColor` parameter, let's add this one in our output.
+
+***TODO: PIXELSHADER***
+
+### The Drawing process
+Next the drawing procedure is similar to how `spriteBatch` works. We start a new session to collect all data, accept drawing of an instance and once the session is closed we send everything over to the GPU.
+
+Starting the drawing is easy- let's introduce a mechanism to ensure we are calling things in the right order. This will save us some headache when debugging everything.
+```csharp
+        private bool _beginCalled=false;
+
+        public void BeginCubeInstance()
+        {
+            if (_beginCalled)
+                throw new InvalidOperationException("Begin cannot be called without Ending the previous Instanced Draw session.");
+
+            instanceCount = 0;
+            _beginCalled = true;
+        }
+```
+See? Simple- the counter is reset to zero so we can start counting the number of cubes we're going to draw this frame. We check if we didn't already call the begin method.
+
+Next up, drawing. Also very simple, as we only need to collect the instance specific data.
+```csharp
+        public static void DrawInstancedCube(Matrix world, Color color)
+        {
+            if (!_beginCalled)
+                throw new InvalidOperationException("BeginCubeInstance must be called first.");
+
+            _instanceData[instanceCount].World = world;
+            _instanceData[instanceCount].CustomColor = color.ToVector4();
+            _instanceCount++;
+        }
+```
+
+We now have the ability to draw our instanced cube- but in reality we aren't drawing anything here- we *collecting* data until we end our session and draw all cubes *at once*.
+
+This is what actually happens when the session ends and we draw everything, I've added comments to indicate what each line does:
+```csharp
+        public static void EndCubeInstance()
+        {
+            if (!_beginCalled)
+                throw new InvalidOperationException("BeginCubeInstance must be called first.");
+
+            // Update the instance buffer with the data:
+            _instanceBuffer.SetData(instanceData);
+
+            // Bind the buffers to the GraphicsDevice, first the mesh, next the instance data.
+            GraphicsDevice.SetVertexBuffers(
+                new VertexBufferBinding(_cubeVertexBuffer, 0, 0),
+                new VertexBufferBinding(_instanceBuffer, 0, 1)
+            );
+
+            //Tell the GraphicsDevice what indices describe the triangles in the vertexbuffer.
+            GraphicsDevice.Indices = _cubeIndexBuffer;
+
+            //Use the instanced cube drawing shader:
+            _cubeInstanceEffect.Techniques[0].Passes[0].Apply();
+
+            //This is the single draw call to draw everything!
+            GraphicsDevice.DrawInstancedPrimitives(
+                PrimitiveType.TriangleList,
+                0, // baseVertex, we begin at the first (zero-based) vertex.
+                0, // startIndex, we begin also at the first (zero-based) datapoint.
+                _primitivecount, // how many triangles does the mesh have?
+                _instanceCount // Only draw the intances we've actually set.
+            );
+
+            //We're done! Reset the session!
+            _beginCalled = false;
+        }
+```
 
