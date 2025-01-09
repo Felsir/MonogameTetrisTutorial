@@ -25,3 +25,7 @@ This tutorial (or "how did he do this?") aims to reproduce the game. The ruleset
    * Preview Queue
    * Wallkicks (or: Super Rotation System - SRS)
    * Sourcecode for Chapter 3
+
+4. Advanced topics
+   * Shaders
+   * [GPU Hardware Instancing](Docs/4-2-HardwareInstancing.md)
