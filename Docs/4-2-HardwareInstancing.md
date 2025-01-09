@@ -11,13 +11,18 @@ The way Monogame draws models, is by sending all model data and the parameters s
 Not a lot, but let's draw 1,000 cubes: 
 - 1,000 times the vertexdata of 9 KB = ~9.21 MB 
 - 1,000 times position data (64 bytes) ~ 64 KB
+
 Total ~9.28 MB and 1,000 drawcalls.
 
 In the current state of videocards, this is still very little. However it does illustrate the massive difference if we were to use hardware instancing. In that case we only send the vertex data once (it is the same for every object we draw) and send the instance data:
 
 - 1 time the vertexdata of 9 KB
 - 1,000 times the position data of ~64 KB
-Total 73 KB (or 0.071 MB) in other words, we save 99% of data and 999 drawcalls! Imagine how much you would save if your object had thousands of vertices!
+
+Total 73 KB (or 0.071 MB) 
+In other words, we save 99% of data and 999 drawcalls! Imagine how much you would save if your object had thousands of vertices!
+
+---
 
 ## Instancing
 Monogame doesn't do instancing out of the box- it does have the basic tools in the toolbox to do it though. So what do we need:
@@ -34,7 +39,9 @@ In essence the process is similar to the way the `spriteBatch`works. You open th
 5. Send all cube data to the GPU (similar to `spriteBatch.End()`)
 6. Back to 3 for the next frame!
 
-Let's have a look at each component:
+Let's have a look at each component...
+
+---
 
 ## The cube model buffers
 This example uses the cube object as our test subject. The Monogame `Model` class holds the information we need, but we cannot use it in the instancing method. So we need to extract the vertex data and put it in our own vertex buffer.
@@ -71,6 +78,8 @@ The following code extracts the vertex data of our cube into the buffers we will
             // ...
         }
 ```
+
+---
 
 ## The instance data buffer
 Next is we need to tell the GPU what instanced data it can expect. For our example we want to draw cubes in different positions, orientation and scale- in other words our `world` matrix. We also want to control each the `Color` for each cube. 
@@ -135,6 +144,8 @@ We also need to reserve space in the buffer- for now let's reserve space for 150
             /// ...
         }
 ```
+---
+
 ### The Shader
 The shader is the basic shader with a few changes.
 The major change is the Vertex shader- this is the entry point for the shader that accepts the data from the instance data:
@@ -156,6 +167,8 @@ The shader now processes each triangle per each instance! We can do the same cal
 
 ***TODO: PIXELSHADER***
 
+---
+
 ### The Drawing process
 Next the drawing procedure is similar to how `spriteBatch` works. We start a new session to collect all data, accept drawing of an instance and once the session is closed we send everything over to the GPU.
 
@@ -176,13 +189,13 @@ See? Simple- the counter is reset to zero so we can start counting the number of
 
 Next up, drawing. Also very simple, as we only need to collect the instance specific data.
 ```csharp
-        public static void DrawInstancedCube(Matrix world, Color color)
+        public void DrawInstancedCube(Matrix world, Color color)
         {
             if (!_beginCalled)
                 throw new InvalidOperationException("BeginCubeInstance must be called first.");
 
-            _instanceData[instanceCount].World = world;
-            _instanceData[instanceCount].CustomColor = color.ToVector4();
+            _instanceData[_instanceCount].World = world;
+            _instanceData[_instanceCount].CustomColor = color.ToVector4();
             _instanceCount++;
         }
 ```
@@ -191,13 +204,13 @@ We now have the ability to draw our instanced cube- but in reality we aren't dra
 
 This is what actually happens when the session ends and we draw everything, I've added comments to indicate what each line does:
 ```csharp
-        public static void EndCubeInstance()
+        public void EndCubeInstance()
         {
             if (!_beginCalled)
                 throw new InvalidOperationException("BeginCubeInstance must be called first.");
 
             // Update the instance buffer with the data:
-            _instanceBuffer.SetData(instanceData);
+            _instanceBuffer.SetData(_instanceData);
 
             // Bind the buffers to the GraphicsDevice, first the mesh, next the instance data.
             GraphicsDevice.SetVertexBuffers(
@@ -224,4 +237,6 @@ This is what actually happens when the session ends and we draw everything, I've
             _beginCalled = false;
         }
 ```
+---
 
+## Putting it together
