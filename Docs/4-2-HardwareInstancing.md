@@ -149,28 +149,55 @@ We also need to reserve space in the buffer- for now let's reserve space for 150
 ### The Shader
 The shader is the basic shader with a few changes.
 The major change is the Vertex shader- this is the entry point for the shader that accepts the data from the instance data:
-```hlsl
+```HLSL
 VertexShaderOutput MainVS(VertexShaderInput input, 
 float4 WorldRow1 : POSITION1, float4 WorldRow2 : POSITION2, float4 WorldRow3 : POSITION3, float4 WorldRow4 : POSITION4, 
 float4 CustomColor : COLOR0)
 {
     // We received our regular model data via VertexShaderInput input,
     // the additional instance parameters are in WorldRow1-4 and CustomColor.
-    // Let's construct the Matrix:
 
+    // Let's construct the Matrix:
     float4x4 InstanceWorld = float4x4(WorldRow1, WorldRow2, WorldRow3, WorldRow4);
 
     // ...
 }
 ```
-The shader now processes each triangle per each instance! We can do the same calculations we used to do for a single cube, except we now use the `InstanceWorld` variable. Since our pixel shader needs the `CustomColor` parameter, let's add this one in our output.
+The shader now processes each triangle as it did before- but now it does so once for each instance! We can do the same calculations we used to do for a single cube, except we now use the `InstanceWorld` variable. Since our pixel shader needs the `CustomColor` parameter, let's add this one in our output.
 
-***TODO: PIXELSHADER***
+```HLSL
+struct VertexShaderOutput
+{
+    float4 Position : SV_POSITION;
+    float3 Normal : NORMAL0;
+    float3 WorldNormal : NORMAL1;
+    float2 TexCoord : TEXCOORD0;
+    float3 WorldPos : TEXCOORD1;
+    float4 CustomColor : TEXCOORD2; //Added this!
+};
+```
+
+In our Vertex shader we add this datapoint:
+```HLSL
+output.CustomColor = CustomColor;
+```
+
+So this means our Pixel Shader has access to this bit of information for further processing.
+
+```HLSL
+float4 MainPS(VertexShaderOutput input) : COLOR
+{
+    // ...
+
+    return input.CustomColor * (DiffuseColor * intensity);
+}
+```
 
 ---
 
 ### The Drawing process
-Next the drawing procedure is similar to how `spriteBatch` works. We start a new session to collect all data, accept drawing of an instance and once the session is closed we send everything over to the GPU.
+Next I'll show a a drawing procedure that is similar to how `spriteBatch` works. There are many ways to do it and the moving parts are similar- but I like this method because it keeps the way I like to structure my game the same.
+We start a new session to collect all data, accept drawing of an instance and once the session is closed we send everything over to the GPU.
 
 Starting the drawing is easy- let's introduce a mechanism to ensure we are calling things in the right order. This will save us some headache when debugging everything.
 ```csharp
@@ -240,3 +267,7 @@ This is what actually happens when the session ends and we draw everything, I've
 ---
 
 ## Putting it together
+Have a look at the [sample project](../src/Chapter4/). I have made a class that does the instanced drawing. In order to mimic a game structure, cubeObjects are made that `Update()` and `Draw()` each gameloop. All cubes are drawn with just a single draw call.
+
+The code should produce 2,500 bouncing cubes as result:
+<img src="Assets/4-2-instancing.gif" alt="2,500 cubes in various colors, happily bouncing!">
