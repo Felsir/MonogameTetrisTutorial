@@ -27,5 +27,5 @@ This tutorial (or "how did he do this?") aims to reproduce the game. The ruleset
    * Sourcecode for Chapter 3
 
 4. Advanced topics
-   * Shaders
+   * [Shaders](Docs/4-1-Shaders.md)
    * [GPU Hardware Instancing](Docs/4-2-HardwareInstancing.md)
