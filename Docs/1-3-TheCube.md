@@ -59,7 +59,7 @@ In this piece of code, I put the camera at (0,0,5) world coordinates, and have i
 The camera class will provide us with the **view** and **projection** matrices.
 
 #### The shader
-We're going to use the BasicEffect, so let's add that one. I've added it as `public static BasicEffect` in the `GameRoot` so I can access it elsewhere.
+We're going to use the BasicEffect, so let's add that one. I've added it as `public static BasicEffect BasicEffect` in the `GameRoot` so I can access it elsewhere.
 
 The BasicEffect has some parameters we want to set so our game looks better. So let's set some parameters:
 ```csharp
