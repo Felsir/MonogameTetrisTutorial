@@ -10,7 +10,7 @@ If you haven't already, check out the [3D basics article](1-2-ThreeDeeBasics.md)
 
 1. Add a `Effect` in the Content Pipeline Tool. Name it `MyEffect.fx`.
 
-<img src="Assets/AddMyEffect.png" width="30%" style="display: block; margin: 0 auto;" alt="Add new Effect in the Content Pipeline Tool">
+<img src="Assets/AddMyEffect.png" style="display: block; margin: 0 auto;" alt="Add new Effect in the Content Pipeline Tool">
 
 
 2. In the `GameRoot` class, let's add the shader so we can use it:
