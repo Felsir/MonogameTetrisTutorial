@@ -4,6 +4,8 @@ Hardware instancing is a graphics rendering technique used to efficiently draw m
 This approach minimizes CPU-GPU communication overhead, boosts performance, and is especially useful in scenarios like rendering forests, crowds, or particle systems where many similar objects need to be displayed. 
 
 In our Tetris example, our main object is a cube, which has different positions and colors. So effectively all our cubes could be drawn in one single Draw action, enormously cutting down on overhead. While our game probably can cope with the limited amount of cubes being drawn, it is an excellent exercise of how to apply this technique.
+
+
 <img src="Assets/CubeWireframe.png" width="20%" style="display: block; margin: 0 auto;" alt="Wireframe of the Cube used in this example">
 
 ## Basic principles
