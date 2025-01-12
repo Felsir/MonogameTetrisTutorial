@@ -4,6 +4,7 @@ Hardware instancing is a graphics rendering technique used to efficiently draw m
 This approach minimizes CPU-GPU communication overhead, boosts performance, and is especially useful in scenarios like rendering forests, crowds, or particle systems where many similar objects need to be displayed. 
 
 In our Tetris example, our main object is a cube, which has different positions and colors. So effectively all our cubes could be drawn in one single Draw action, enormously cutting down on overhead. While our game probably can cope with the limited amount of cubes being drawn, it is an excellent exercise of how to apply this technique.
+<img src="Assets/CubeWireframe.png" width="20%" style="display: block; margin: 0 auto;" alt="Wireframe of the Cube used in this example">
 
 ## Basic principles
 The way Monogame draws models, is by sending all model data and the parameters such as positioning data to the GPU. So let's assume our basic cube model consists of 288 vertices, each with position, normal and texture coordinates- in total 9 KB of data for one mesh. 
@@ -22,7 +23,6 @@ In the current state of videocards, this is still very little. However it does i
 Total 73 KB (or 0.071 MB) 
 In other words, we save 99% of data and 999 drawcalls! Imagine how much you would save if your object had thousands of vertices!
 
----
 
 ## Instancing
 Monogame doesn't do instancing out of the box- it does have the basic tools in the toolbox to do it though. So what do we need:

@@ -9,6 +9,10 @@ In MonoGame, shaders are managed through the `ContentManager` as an `Effect`. To
 If you haven't already, check out the [3D basics article](1-2-ThreeDeeBasics.md) and the [Cube article](1-3-TheCube.md). The [Chapter 1 code](../src/) should provide you with a basic understanding of drawing a 3D object. Let's revise a few things so we can start using our own shader:
 
 1. Add a `Effect` in the Content Pipeline Tool. Name it `MyEffect.fx`.
+
+<img src="Assets/AddMyEffect.png" width="30%" style="display: block; margin: 0 auto;" alt="Add new Effect in the Content Pipeline Tool">
+
+
 2. In the `GameRoot` class, let's add the shader so we can use it:
 ```csharp
     public static Effect MyEffect;
@@ -39,7 +43,7 @@ If you haven't already, check out the [3D basics article](1-2-ThreeDeeBasics.md)
                 }
 ```
 
-Now the Monogame code will use the custom effect when drawing the cube. However, there is still some work to do to actually make the shader work. Let's dive into some theory on how shaders work.
+Now the Monogame code is instructed to use the custom effect when drawing the cube. **However, there is still some work to do to actually make the shader work!** Let's dive into some theory on how shaders function.
 
 ## The Pipeline
 Rendering computer graphics is often described as a series of steps in a pipeline, where each step performs a specific task in the process of transforming 3D data into a 2D image. Many of these steps are programmable, allowing for customization. The programs executed at these stages are collectively referred to as shaders.
@@ -100,7 +104,7 @@ struct VertexShaderOutput
 
 VertexShaderOutput MainVS(VertexShaderInput input)
 {
-    VertexShaderOutput output = (VertexShaderOutput);
+    VertexShaderOutput output;
 
     // Transform the position using the matrices
     float4 worldPosition = mul(input.Position, World);
@@ -167,7 +171,10 @@ The function returns a `float4`, representing the final color of the pixel. This
 You probably noticed the `COLOR` at the end of the function header. This syntax specifies that the returned value is the color output of the Pixel Shader. This output will be used to determine the pixel color on the screen.
 
 In this example, the shader doesn't perform any complex calculations or lighting but simply outputs a solid color (the `DiffuseColor`- the *uniform* defined earlier, which is a float4 (RGBA value)).
-If you were to use this Pixel Shader, any pixels affected by drawing the 3D model would simply show a single color without any shading at all.
+If you were to use this Pixel Shader, any pixels affected by drawing the 3D model would simply show a single color without any shading at all:
+
+<img src="Assets/41-DiffuseOnly.gif" width="30%" style="display: block; margin: 0 auto;" alt="Rendered cube with red diffuse color only">
+
 
 ### Add some shading
 Let's make the shader a bit more interesting:
@@ -185,7 +192,9 @@ Here we introduce a very simple shading technique. This code calculates the *dot
 By multiplying the result of the dot product with the diffuse color, the cube will be light where the side of the cube faces the lightsource![^1]. More advanced shading like *phong shading* require calculating specular highlights and reflections, but follow the same principle of passing data between vertex and pixel shader.
 [^1]:Note that this only calculates lighting, shadows are not taken into account! Shadows requires a different set of techniques out of scope of this document.
 
-The purpose of this experiment is to demonstrate how you can create visual effects using information stored in the vertex data of a model (in this example, the normal) combined with uniform values (such as the world matrix). This data is then passed to the Pixel Shader, where it interacts with additional uniforms (DiffuseColor and DiffuseLightDirection) to produce a visually appealing result.
+The purpose of this experiment is to demonstrate how you can create visual effects using information stored in the vertex data of a model (in this example, the normal) combined with uniform values (such as the world matrix). This data is then passed to the Pixel Shader, where it interacts with additional uniforms (DiffuseColor and DiffuseLightDirection) to produce a visually appealing result:
+
+<img src="Assets/41-SimpleLighting.gif" width="30%" style="display: block; margin: 0 auto;" alt="Rendered cube with simple shading applied">
 
 With a bit of mathematical insight, you can create a wide variety of impressive visual effects!
 
@@ -222,7 +231,7 @@ float4 MainPS(VertexShaderOutput input) : COLOR
     if (intensity < 0)
         intensity = 0;
 
-    textureColor = tex2D(diffuseSampler, input.TexCoord);
+    float4 textureColor = tex2D(diffuseSampler, input.TexCoord);
 
     return textureColor * DiffuseColor * intensity;
 }
@@ -232,10 +241,16 @@ This creates a final color that combines the texture with the lighting effect.
 
 Ofcourse we need to set the uniform to tell the shader to use the texture, so in the Monogame code we need to add:
 ```csharp
-MyEffect.Parameters["Texture"].SetValue(myTexture);
+    // Color this cube LightGray. Shaders don't "know" colors, so RGB is represented as a Vector3.
+    // The texture is multiplied in the shader by the color.
+    GameRoot.MyEffect.Parameters["DiffuseColor"].SetValue(Color.LightGray.ToVector3());
+    GameRoot.MyEffect.Parameters["Texture"].SetValue(myTexture);
 ```
 `myTexture` is a variable where you’ve loaded the texture you want to use. This statement assigns the texture to the `Texture` uniform declared in the shader.
-If the texture remains the same for all draw calls (e.g., a background image or a repeating texture), you can set it once during initialization or before the draw loop. If the texture changes for each object using this effect (e.g., different images for different models), you’ll need to update the uniform for every object within the draw loop. 
+If the texture remains the same for all draw calls (e.g., a background image or a repeating texture), you can set it once during initialization or before the draw loop. If the texture changes for each object using this effect (e.g., different images for different models), you’ll need to update the uniform for every object within the draw loop.
+
+<img src="Assets/41-textured.gif" width="30%" style="display: block; margin: 0 auto;" alt="Rendered cube with texture applied">
+
 Avoid setting the same texture multiple times within a single frame, as this can incur unnecessary overhead. It is best to group these. Even though the texture is loaded in the GPUs memory, all bits help when looking for performance!
 
 ## Techniques and Passes
@@ -322,7 +337,7 @@ struct VertexShaderOutput
 //
 VertexShaderOutput MainVS(VertexShaderInput input)
 {
-    VertexShaderOutput output = (VertexShaderOutput);
+    VertexShaderOutput output;
 
     // Transform the position using the matrices
     float4 worldPosition = mul(input.Position, World);
