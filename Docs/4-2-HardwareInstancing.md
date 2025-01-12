@@ -267,7 +267,7 @@ This is what actually happens when the session ends and we draw everything, I've
 ---
 
 ## Putting it together
-Have a look at the [sample project](../src/Chapter4/). I have made a class that does the instanced drawing. In order to mimic a game structure, cubeObjects are made that `Update()` and `Draw()` each gameloop. All cubes are drawn with just a single draw call.
+Have a look at the [sample project](../src/Chapter42/). I have made a class that does the instanced drawing. In order to mimic a game structure, cubeObjects are made that `Update()` and `Draw()` each gameloop. All cubes are drawn with just a single draw call.
 
 The code should produce 2,500 bouncing cubes as result:
 <img src="Assets/4-2-instancing.gif" alt="2,500 cubes in various colors, happily bouncing!">

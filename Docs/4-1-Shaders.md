@@ -171,7 +171,7 @@ The function returns a `float4`, representing the final color of the pixel. This
 You probably noticed the `COLOR` at the end of the function header. This syntax specifies that the returned value is the color output of the Pixel Shader. This output will be used to determine the pixel color on the screen.
 
 In this example, the shader doesn't perform any complex calculations or lighting but simply outputs a solid color (the `DiffuseColor`- the *uniform* defined earlier, which is a float4 (RGBA value)).
-If you were to use this Pixel Shader, any pixels affected by drawing the 3D model would simply show a single color without any shading at all:
+If you were to use this Pixel Shader, any pixels affected by drawing the 3D model would simply show a single color without any shading at all- (remember we set the diffuse color to red in our Draw loop):
 
 <img src="Assets/41-DiffuseOnly.gif" width="30%" style="display: block; margin: 0 auto;" alt="Rendered cube with red diffuse color only">
 
@@ -283,7 +283,7 @@ This is a technique called `BasicColorDrawing`, which contains a single pass (`P
 The preprocessor directives (`#if OPENGL`) handle cross-platform compatibility, ensuring the correct shader models and semantics are used for *OpenGL* or *Direct3D*, depending on the platform.
 
 ## The Shader file
-The final contents of the `MyEffect.fx` file is:
+The final contents of the `MyEffect.fx` file is as below- you can also check the code in the [sample project](../src/Chapter41/).
 
 ```HLSL
 #if OPENGL
