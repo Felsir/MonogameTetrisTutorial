@@ -1,11 +1,11 @@
-﻿using Chapter1.Assets;
-using Chapter1.Scenes;
-using Chapter1.Utils;
+﻿using Chapter41.Assets;
+using Chapter41.Scenes;
+using Chapter41.Utils;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 
-namespace Chapter1
+namespace Chapter41
 {
     public class GameRoot : Game
     {

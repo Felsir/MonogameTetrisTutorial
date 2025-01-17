@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace Chapter4
+namespace Chapter42
 {
     internal class CubeObject
     {

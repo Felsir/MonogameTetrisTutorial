@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Chapter4
+namespace Chapter42
 {
     internal struct CubeInstanceData
     {

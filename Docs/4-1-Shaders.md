@@ -282,6 +282,10 @@ This is a technique called `BasicColorDrawing`, which contains a single pass (`P
 
 The preprocessor directives (`#if OPENGL`) handle cross-platform compatibility, ensuring the correct shader models and semantics are used for *OpenGL* or *Direct3D*, depending on the platform.
 
+## Next steps
+Why all this effort if the built in `BasicEffect` already provides a lot out of the box? While true for basic shading, taxture and hilights on an object- knowing how shaders work unlock a lot of opportunities! For example, visual techniques to add bumpmapping (add dents, scratches on a object with a new texture called a normalmap) or cellshading (give your objects a cartoonlike appearance). 
+More advanced techniques such as casting shadows on other objects or optimizations in drawing a lot of objects in a technique called [hardware instancing](4-2-HardwareInstancing.md) are also achieved with shaders.
+
 ## The Shader file
 The final contents of the `MyEffect.fx` file is as below- you can also check the code in the [sample project](../src/Chapter41/).
 

@@ -1,4 +1,4 @@
-﻿using Chapter1.Scenes;
+﻿using Chapter41.Scenes;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System;
@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Chapter1
+namespace Chapter41
 {
     internal class TitleScreen : IScene
     {

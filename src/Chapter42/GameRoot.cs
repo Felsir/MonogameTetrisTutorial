@@ -6,7 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 
-namespace Chapter4
+namespace Chapter42
 {
     public class GameRoot : Game
     {
