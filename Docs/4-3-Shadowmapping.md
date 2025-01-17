@@ -129,7 +129,91 @@ Because the light is directional, an orthographic projection is used. Orthograph
 * **Light's View-Projection Matrix**
 The final result is the light's view-projection matrix, which combines the view matrix and the projection matrix that determines the volume of the world the light will render (based on the bounding box).
 
+### The shadow map shader
+The shadow map's Vertex and Pixel shaders are surprisingly simple:
 
+```HLSL
+ShadowMapVSOutput ShadowMapVS(VertexShaderInput input)
+{
+    ShadowMapVSOutput output;
+
+    // Calculate position as usual- the ViewProjection Matrix already takes
+    // the new light frustum into account.
+    output.Position = mul(input.Position, mul(World, ViewProjection));
+    
+    // Calculate depth. The division by the W component brings the component
+    // into homogenous space- which means the depth is normalized on a 0-1 scale.
+    output.Depth = output.Position.z / output.Position.w; 
+
+    return output;
+}
+
+float4 ShadowMapPS(ShadowMapVSOutput input) : COLOR
+{
+    // Store depth in the red component.
+    return float4(input.Depth,0,0,1); 
+}
+```
+Since the shader accepts the `ViewProjection` of the lightsource to calculate the location of the pixel and we write the normalized depth in the red component so we can check it later when drawing the final scene. We just need a `Rendertarget2D`:
+
+```csharp
+    _shadowMapRenderTarget = new RenderTarget2D(GraphicsDevice, 4096, 4096, false,
+                                SurfaceFormat.Single,
+                                DepthFormat.Depth24);
+```
+The resolution is 4096x4096, to get the most details out of the shadows. Remember, the light frustum is calculated to encompass the entire camera frustum. The bigger the camera frustum, the less space the texture has to hold the entire scene data[^1]
+
+### The diffuse shader
+To render the final scene a shader is used. The full shader can be found in [the code](../src/Chapter43/Content/DiffuseEffect.fx). Let's focus on the actual shadow component in the code:
+
+```HLSL
+float4 MainPS(VertexShaderOutput input) : COLOR
+{
+
+    // ...
+    
+    // Find the position of this pixel in light space in the projection
+    float4 lightingPosition = mul(input.Position3D, LightViewProjection);
+    
+    lightingPosition.xyz = 0.5 * lightingPosition.xyz / lightingPosition.w; // transform into homogenous space
+    
+    // Check if the found pixel is inside the light frustum
+    if (lightingPosition.x > -0.5 && lightingPosition.x<0.5 && lightingPosition.y>-0.5 && lightingPosition.y < 0.5)
+    {
+        lightingPosition = mul(input.Position3D, LightViewProjection);
+
+        // Find the position in the shadow map for this pixel
+        float2 ShadowTexCoord = 0.5 * lightingPosition.xy /
+            lightingPosition.w + float2(0.5, 0.5);
+        
+        // Rendering y coordinate needs flipping
+        // sampling and rendering from a different y direction.
+        ShadowTexCoord.y = 1.0f - ShadowTexCoord.y;
+
+        // Get the current depth stored in the shadow map (red component for close)
+        float shadowdepth = tex2D(shadowSampler, ShadowTexCoord).r;
+
+        // Calculate the current pixel depth
+        // The bias is used to prevent floating point errors that occur when
+        // the pixel of the occluder is being drawn
+        float ourdepth = (lightingPosition.z / lightingPosition.w) - DepthBias;
+        
+        // Check to see if this pixel is in front or behind the value in the shadow map
+        if (shadowdepth < ourdepth)
+        {
+            // Shadow the pixel by multiplying by the shadowstrength
+            diffuse.rgb *= ShadowStrength;
+        }
+    }
+    
+    return diffuse;
+}
+```
+This code picks the 3D value of the fragment, and uses the light matrix to find the corresponding pixel in our shadowmap. The shadow depth is read and based on the depth of the pixel the result is in the shade or not.
+
+
+
+[^1]: This is something that can be solved using Cascading Shadow Maps, the camera frustum is separated in 3 or 4 sections ranging from small increasing in size and distance. This makes it so that nearby shadows are detailed but far shadows are less detailed- which is okay for distant shadows.
 
 
 
