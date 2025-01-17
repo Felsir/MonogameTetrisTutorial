@@ -11,7 +11,9 @@ A shadow map isn’t actually a map of shadows—it’s a map of what the light 
 
 ### The Frustum
 An important concept in shadow mapping is the *frustum*. So, what is a frustum? It’s the part of the world visible to the camera, defined by the camera's projection. For a typical perspective view, the frustum looks like this:
+
 <img src="Assets/frustum.png" style="display: block; margin: 0 auto;" alt="The view frustum">
+
 In shadow mapping, the frustum is important because it defines the boundaries of what objects are visible and potentially lit in the scene. But there's another frustum in play! To determine which parts of the scene are lit, we need to consider the world from the light source's perspective. 
 
 The shape of the light source's frustum depends on the type of light:
