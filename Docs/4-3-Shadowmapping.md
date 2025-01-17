@@ -2,6 +2,10 @@
 Shadows are an important part of making 3D scenes look realistic. They show where objects are in the world, add depth, and make everything feel more alive. But how do games create shadows that move and change with the light? That’s where *shadow mapping* comes in. Shadow mapping is a way to create dynamic shadows that react to lights and objects in your game. In this article, I’ll explain how shadow mapping works and how I have implemented it.
 The code is in [chapter43 in the src folder](../src/).
 
+The sample code should produce this as result:
+
+<img src="Assets/43-basicshadowmap.gif" alt="Three cubes with shadows being cast on them">
+
 ## Setting the scene
 
 ### The basic idea
