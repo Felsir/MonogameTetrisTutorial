@@ -217,6 +217,68 @@ float4 MainPS(VertexShaderOutput input) : COLOR
 ```
 This code picks the 3D value of the fragment, and uses the light matrix to find the corresponding pixel in our shadowmap. The shadow depth is read and based on the depth of the pixel the result is in the shade or not.
 
+### Drawing the scene
+In the sample code, I set up a bunch of cubes- we need something to cast and receive the shadows to have proof of the hard work!
+
+In the `Update()` loop the cubes and camera receive new positions. Therefore matrices are recalculated:
+
+```csharp
+        protected override void Update(GameTime gameTime)
+        {
+
+            // ...
+
+            // Because the camera has changed, we need to recalculate the light projection:
+            Matrix lightviewprojection = Light.CalculateMatrix(Camera.View, Camera.Projection);
+
+            // Update all parameters that have changed:
+
+            // In the shadowmap shader:
+            Shaders.ShadowMapEffect.Parameters["ViewProjection"].SetValue(lightviewprojection);
+            // In the diffuse shader:
+            Shaders.DiffuseEffect.Parameters["View"].SetValue(Camera.View);
+            Shaders.DiffuseEffect.Parameters["LightViewProjection"].SetValue(lightviewprojection);
+
+            base.Update(gameTime);
+        }
+```
+
+Once these parameters are set, on to the render stage. Have a look at the `Draw()` section below: 
+```csharp
+        protected override void Draw(GameTime gameTime)
+        {
+            // Switch to our shadowmap render target so we can render from the lightsource viewpoint:
+            GraphicsDevice.SetRenderTarget(_shadowMapRenderTarget);
+            GraphicsDevice.Clear(Color.Black);
+            
+            // The scene is rendered as normal, with the shadowmap effect:
+            for (int i = 0; i < 3; i++)
+            {
+                cubeObjects[i].Draw(Shaders.ShadowMapEffect);
+            }
+
+            // Switch back to the backbuffer
+            GraphicsDevice.SetRenderTarget(null);
+            GraphicsDevice.Clear(Color.Black);
+
+            // Rendere everything with the normal diffuse effect
+            for (int i = 0; i < 3; i++)
+            {
+                cubeObjects[i].Draw(Shaders.DiffuseEffect);
+            }
+
+            base.Draw(gameTime);
+        }
+```
+As you can see the scene is rendered twice in almost the exact same way. Since in our initialisation stage, the `DiffuseEffect` shadowmap parameter was already set to the `_shadowMapRenderTaget`.
+
+The final result is a scene with shadows!
+
+<img src="Assets/43-basicshadowmap.gif" alt="Three cubes with shadows being cast on them">
+
+# Shadow Maps improvements
+There are a couple of things to understand about this shadowmap technique. First the shadowmap depends on the size of the camera's frustum. In the code in this example, the scene is small and the resolution of the shadow texture is fine. If you have a bigger world, the shadows may become "blocky" as the resolution of the texture isn't enough to hold all shadow information for the pixels visible on screen. For this *Cascasing Shadowmaps* are a solution.
+Since that is another topic, I added the code for a cascading implementation in the src folder as `chapter43cc`.
 
 
 [^1]: This is something that can be solved using Cascading Shadow Maps, the camera frustum is separated in 3 or 4 sections ranging from small increasing in size and distance. This makes it so that nearby shadows are detailed but far shadows are less detailed- which is okay for distant shadows.
