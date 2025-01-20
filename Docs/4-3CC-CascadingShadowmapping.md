@@ -1,5 +1,7 @@
 # Cascading Shadowmapping
-The basic technique is explained in the [previous article](4-3-Shadowmapping.md). This method may work for a lot of projects but there is a drawback in this solution when the player's environment grows. 
+The basic technique is explained in the [previous article](4-3-Shadowmapping.md). This method may work for a lot of projects but there is a drawback in this solution when the player's environment grows. The cascade method divides the world in slices where each one has a different level of detail. The animation below shows the result of the sample code- with debug info showing the actual cascades.
+
+<img src="Assets/43cc-CascadeShadowmap.gif" alt="Cubes with shadows being cast on them, halfway the debug mode shows colored ranges for each cascade">
 
 ## Do you need Cascades?
 The answer to that question is basically: how big is your game world? Let's get into detail of the problem and how that is solved:
@@ -242,6 +244,8 @@ The final `Draw()` section is no more spectacular than before:
 That's it! Study the full sourcecode to have a bit of an idea of the set up.
 
 When running the code, press `Left Alt` and `Left Shift` to toggle the debug mode, where the splits and shadowmap are visualised.
+
+<img src="Assets/43cc-CascadeShadowmap.gif" alt="Cubes with shadows being cast on them, halfway the debug mode shows colored ranges for each cascade">
 
 # Notes
 The code demonstrates the concept. There are several optimisations that could be made such as:
