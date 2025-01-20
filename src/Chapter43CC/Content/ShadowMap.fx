@@ -22,7 +22,6 @@ struct ShadowMapVSOutput
 {
     float4 Position : SV_Position;
     float Depth : TEXCOORD0;
-    float Cascade : TEXCOORD1;
 };
 
 ShadowMapVSOutput ShadowMapVS(VertexShaderInput input)
@@ -44,7 +43,7 @@ float4 ShadowMapPS(ShadowMapVSOutput input) : COLOR
 {
     // Depending on the Cascade a different color component is used:
     if(Cascade == 0)
-        return float4(input.Depth, 1, 1, 0); 
+        return float4(input.Depth, 0, 0, 0); 
     if (Cascade == 1)
         return float4(0, input.Depth, 0, 0);
     if (Cascade == 2)

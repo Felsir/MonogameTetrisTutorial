@@ -29,5 +29,5 @@ This tutorial (or "how did he do this?") aims to reproduce the game. The ruleset
 4. Advanced topics
    * [Shaders](Docs/4-1-Shaders.md)
    * [GPU Hardware Instancing](Docs/4-2-HardwareInstancing.md)
-   * [Shadowmapping](Docs/4-3-Shadowmapping.md) and [Cascaded shadowmaps](Docs/4-3-CascadingShadowmapping.md).
+   * [Shadowmapping](Docs/4-3-Shadowmapping.md) and [Cascaded shadowmaps](Docs/4-3CC-CascadingShadowmapping.md).
    * [Sourcecode for Chapter 4](https://github.com/Felsir/MonogameTetrisTutorial/tree/main/src)
