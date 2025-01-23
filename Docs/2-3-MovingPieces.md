@@ -172,16 +172,258 @@ Let's add the `Update()` method in the `Player` class to execute our gameplay lo
 ```csharp
     public void Update(GameTime gt)
     {
+        // update the state of playerinput.
+        _playerInput.Update();
 
+        // don't worry, gameplay logic will be added!
     }
 ```
 
+## The scene
 Okay, we now have almost everything to start our gameplay. For completeness we're going to introduce the `Marathon` scene- Marathon is the default gameplay of Tetris where a player tries to score as many points and keep the game going for as long as possible.
 
 This class will hold the player object and keep track of the win or lose conditions. This way we can introduce *sprint*, *ultra* and *versus* gamemodes.[^2]
 
-```csharp
+[^2]: *Sprint* is a complete a set number of lines as fast as possible, *ultra* is score as many points in a set timelimit, *versus* is a competitive mode where scoring lines gives the opponent so called 'garbage' lines.
 
+```csharp
+internal class MarathonGame : IScene
+    {
+
+        private Player _player;
+        private Grid.Playfield _playfield;
+
+        public MarathonGame() 
+        { 
+            // The playfield's origin is topleft:
+            // The playfield is 2 units wide and 4 units high; so -1,2,0 puts the playfield in the center of our view. 
+            _playfield = new Grid.Playfield(new Vector3(-1f,2f,0));
+
+            // Create a player and assing the playfield object:
+            _player=new Player(_playfield);
+        }
+
+        public void Update(GameTime gameTime)
+        {
+            _player.Update(gameTime);
+        }
+
+
+        public void Draw(SpriteBatch spriteBatch, GameTime gameTime)
+        {
+            _player.Draw();
+        }
+    }
+```
+Now if we change the lines in `GameRoot` to push a `MarathonGame` instead of the title, we should be greeted with a playfield, ready for the player!
+
+## Move the piece
+Now we can see the results of our work, time to make things move.
+The basic movement logic is: does the shape fit in the intended location? If so allow the move otherwise, well don't. So let's start with the simple, left and right movements:
+
+In the `Player.Update()`, after we updated the input manager:
+```csharp
+    if(_playerInput.IsPressed(Controls.Left))
+    {
+        if(_playfield.DoesShapeFitHere(_currentPiece, _x-1, _y))
+        {
+            _x-=1;
+        }
+    }
+
+    if(_playerInput.IsPressed(Controls.Right))
+    {
+        if(_playfield.DoesShapeFitHere(_currentPiece, _x+1, _y))
+        {
+            _x+=1;
+        }
+    }
+```
+Rotation is slightly different, we rotate the piece: test if it fits, if it doesn't we rotate it back:
+```csharp
+    if(_playerInput.IsPressed(Controls.RotateCW))
+    {
+        _currentPiece.RotateLeft()
+        if(!_playfield.DoesShapeFitHere(_currentPiece, _x, _y))
+        {
+            // it does not fit! Rotate it back:
+            _currentPiece.RotateRight()
+        }
+    }
+
+    if(_playerInput.IsPressed(Controls.RotateCCW))
+    {
+        _currentPiece.RotateRight()
+        if(!_playfield.DoesShapeFitHere(_currentPiece, _x, _y))
+        {
+            // it does not fit! Rotate it back:
+            _currentPiece.RotateLeft()
+        }
+    }
+``` 
+Now, run the code and you should be able to move the piece left to right and rotate it!
+
+The softdrop and harddrop are bit different, first the soft drop:
+
+```csharp
+public void Update(GameTime gameTime)
+{
+    // ...
+
+    if(_playerInput.IsPressed(Controls.SoftDrop))
+    {
+        if(_playfield.DoesShapeFitHere(_currentPiece, _x, _y+1))
+        {
+            // There is room:
+            _y+=1;
+        }
+        else
+        {
+            // There is no room! So the down movement triggered the lock.
+            SoftlockPiece();
+        }
+    }
+}
+
+private void SoftLock()
+{
+    // lock the piece onto the playfield:
+    _playfield.LockInPlace(_currentPiece, _x, _y);
+
+    // line checking will be done later!
+
+    // give the player a new piece:
+    GeneratePiece();
+}
+```
+Keep in mind, there is more to moving the piece downwards so we're going to change this code soon. For now, this should give you the option to stack tetriminoes.
+
+Onwards to the hard drop. The hard drop is a shortcut where the piece instantly moves to the lowest possible position. In Tetris there is a concept called the *ghost piece*[^3]. This a preview where the tetrimino would land given if it were to drop. We achieve two aims at once: calculate where we would visualize the ghost piece and determine the hard drop location of a piece.
+
+[^3]: There are many acronyms in Tetris, the ghost piece is also called the TLS, short for *T*emporary *L*anding *S*ystem. However ghost or shadow piece is a more common term.
+
+```csharp
+private int _ghostX, _ghostY;
+
+public void Update(GameTime gameTime)
+{
+    // ...
+
+    // before we have the player move the piece, calculate the ghost piece location:
+    CalculateGhostPiece();
+
+    // ...
+
+    if(_playerInput.IsPressed(Controls.HardDrop))
+    {
+        HardDrop();
+    }
+}
+
+private void CalculateGhostPiece()
+{
+    // to see where the piece lands, just keep moving down until we no longer can:
+    _ghostX=_x;
+    _ghostY=_y;
+
+    while(_playfield.DoesShapeFitHere(_currentPiece,_ghostX,_ghostY+1))
+    {
+        _ghostY++;
+    }
+}
+
+private void HardDrop()
+{
+    // lock the piece onto the playfield:
+    _playfield.LockInPlace(_currentPiece, _ghostX, _ghostY);
+
+    // line checking will be done later!
+
+    // give the player a new piece:
+    GeneratePiece();
+}
 ```
 
-[^2]: *Sprint* is a complete a set number of lines as fast as possible, *ultra* is score as many points in a set timelimit, *versus* is a competitive mode where scoring lines gives the opponent so called 'garbage' lines.
+Now, the player controls for a basic game is complete! Don't worry- we'll get to the line clearing soon! Run the code to see the result.
+
+## Drop and Gravity
+In Tetris the concept of a piece dropping automatically is called drop which is expressed in *gravity*. The drop speed increases for each level. Lucky for us, Tetris is well documented and the calculation is known. The formula is for the time the terimino spends per row is as follows:
+
+```math
+Time = (0.8-((Level-1)*0.007))^(Level-1)
+```
+
+We want to know when to drop the piece automatically in `double`- because the `GameTime` returns values in doubles. Implementing this in our `Player` class:
+```csharp
+    private double CalculateDropSpeed(int level)
+    {
+        // formula as found on The Tetris Guidelines.
+        // 1 is the first (lowest) level,
+        // The dropspeed does not increase above 20.
+        level = MathHelper.Clamp(level,1,20);
+
+        // (0.8-((Level-1)*0.007))^(Level-1)
+        return Math.Pow((0.8d - (level - 1) * 0.007d), (level - 1));
+    }
+```
+
+In the next code section we're going to implement automatic drop: 
+```csharp
+    public int Level=1;
+    private double _dropSpeed, _dropTimer;
+
+    public Player(Grid.Playfield playfield)
+    {
+        // ...
+
+        _dropSpeed = CalculateDropSpeed(Level); // what is the timing for the current level?
+        _dropTimer = _dropSpeed; // to keep track of the timer for the current row. 
+
+        // ...
+    }
+
+    public void Update(GameTime gameTime)
+    {
+        //[this line at the top of the update loop]
+        _dropTimer -= gameTime.ElapsedGameTime.TotalSeconds;
+
+        // ...
+
+        //[this section at the bottom of the update loop]
+        if(_dropTimer<0)
+        {
+            // time for this row is over, can we drop the piece?
+            if(_playfield.DoesShapeFitHere(_currentPiece,_x,_y+1))
+            {
+                // yes
+                _y++;
+            }
+            else
+            {
+                // no- lock the piece:
+                SoftLock();
+            }
+
+            //reset the timer:
+            _dropTimer+=_dropSpeed;
+        }
+
+        // ...
+    }
+```
+When you run the code now, the tetrimino automatically drops! Increase the variable `Level` to see the speed difference. Higher speeds require special techniques to play[^4], which is a topic for the next chapter!
+[^4] Tetris is a rabbithole of gameplay details, soon you'll learn about *ARR*, *DAS*, *SRS* and experience the [Tetris Effect](https://en.wikipedia.org/wiki/Tetris_effect)!
+
+The final bit to tweak is the softdrop by the player. In the current implementation the player needs to repeatedly press the down key to make the piece drop. The intended gameplay is trigger this by keeping the key pressed. What actually happens is the down key *increases* the timer for the current row by a factor. In a lot of Tetris implementations this factor is 6, meaning pressing the softdrop key speeds the timer up six times. This is called the SDF (did I mention Tetrisfans love 3 letter acronyms?).
+```csharp
+private const int SDF = 6; //Soft Drop Factor
+```
+
+A revised version of the softdrop code in the `Update()` loop looks like this:
+```csharp
+    if(_playerInput.IsDown(Controls.SoftDrop))
+    {
+        _droptimer -= (SDF * _dropspeed) * gt.ElapsedGameTime.TotalSeconds;
+    }
+```
+Notice that `IsPressed` is replaced by `IsDown`! The whole locking logic is replaced because it is handled by the autodrop.
