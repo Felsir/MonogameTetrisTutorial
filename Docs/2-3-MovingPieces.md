@@ -427,3 +427,7 @@ A revised version of the softdrop code in the `Update()` loop looks like this:
     }
 ```
 Notice that `IsPressed` is replaced by `IsDown`! The whole locking logic is replaced because it is handled by the autodrop.
+
+If you run the game, you should be able to stack pieces! You will run into an `Exception` when "topping out" because we haven't implemented the game over state yet. 
+
+In the next tutorial line checking and game states will be added!
