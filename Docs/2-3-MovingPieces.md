@@ -95,7 +95,7 @@ The [Tetrimino factory](2-1-Tetriminos.md) should generate pieces at random[^1].
     }
 ```
 
-[^1]:There is a specific algorithm in Tetris for random pieces, which is another topic later. For now, we stick with the simple random function.
+[^1]:There is a specific algorithm in Tetris for random pieces, which is another topic later. For now, we stick with the simple random function. After a few plays with the 'puser' random function, you will understand why!
 
 ## The Player
 Finally we have arrived at the player! What does the player object control? 
@@ -433,7 +433,7 @@ A revised version of the softdrop code in the `Update()` loop looks like this:
 ```
 Notice that `IsPressed` is replaced by `IsDown`! The whole locking logic is replaced because it is handled by the autodrop.
 
-If you run the game, you should be able to stack pieces! You will run into an `Exception` when "topping out" because we haven't implemented the game over state yet.
+If you run the game, you should be able to stack pieces! We haven't implemented the game over state yet, but we'll get to that soon!
 
 <img src="Assets/2-movement04.gif" width="60%" style="display: block; margin: 0 auto;" alt="pieces are moved- pieces move down at a steady pace. Both hard and soft drops are shown">
 
