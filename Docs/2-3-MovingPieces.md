@@ -87,7 +87,7 @@ Finally, this approach can be expanded to support other input devices, such as g
 The [Tetrimino factory](2-1-Tetriminos.md) should generate pieces at random[^1]. We could assign a `seed` to the factory so it generates the same sequence every time- useful if you want to expand this game to a versus battle where both players should have equal opportunities. For now we simply add a randomizer to generate a random piece. So in our `TetriminoFactory` class:
 
 ```csharp
-    private Random _random()=new Random();
+    private Random _random=new Random();
 
     public Tetrimino GenerateRandom()
     {
@@ -110,7 +110,7 @@ There are many subtle mechanics in Tetris, but right now it is time to focus on 
 internal class Player
 {
     private Grid.Playfield _playfield;
-    private Tetrimino.TetriminoFactory _piecefactory;
+    private Tetrimino.TetriminoFactory _pieceFactory;
 
     private InputManager _playerInput;
 
@@ -120,7 +120,7 @@ internal class Player
     public Player(Grid.Playfield playfield)
     {
         _playfield = playfield; // assign a playfield to the player.
-        _piecefactory = new Tetrimino.TetriminoFactory(); // a way to generate new pieces.
+        _pieceFactory = new Tetrimino.TetriminoFactory(); // a way to generate new pieces.
 
         _playerInput = new InputManager();
 
@@ -148,7 +148,7 @@ But wait- the player object has no clue where the playfield is in the 3D world- 
 
 In the `Playfield` class:
 ```csharp
-    public void DrawTetrimino(Tetrimino t, int column, int row)
+    public void DrawTetrimino(Tetrimino.Tetrimino t, int column, int row)
     {
         Matrix world = Matrix.CreateTranslation(_position) * 
                     Matrix.CreateTranslation(column * 0.2f, -row * 0.2f, 0);
@@ -163,7 +163,7 @@ Now we can complete the `Draw()` method in the `Player` class:
     public void Draw()
     {
         _playfield.Draw();
-        _playfield.Draw(_currentPiece, _x, _y);
+        _playfield.DrawTetrimino(_currentPiece, _x, _y);
     }
 ```
 

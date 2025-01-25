@@ -183,7 +183,7 @@ Time to see the results! Let's make a quick test to show a few pieces in a grid!
 
 Make sure you push this new scene in the scene manager in the `GameRoot` in the `ContentLoad()` method. If you run the code you should be greeted by this:
 
-<img src="Assets/grid-test1.png" width="30%" style="display: block; margin: 0 auto;" alt="The result of our grid test code: a yellow O, orange L and red Z piece in the playfield.">
+<img src="Assets/grid-test1.png" width="60%" style="display: block; margin: 0 auto;" alt="The result of our grid test code: a yellow O, orange L and red Z piece in the playfield.">
 
 ## Check the player's piece against the grid
 An important task is to actually know if the piece the player controls can go where the player wants it to go. Since the player's shape is defined by a set of booleans and our grid `IsOccupied` variable is a boolean; checking is really simple! I have added comments in the code for each check. We can simply return out of these loops, as soon as only 1 check fails, the entire shape cannot fit in the designated area!
@@ -250,7 +250,7 @@ Replace the lines in the `GameScene` class so instead of locking t3 directly int
                 _playfield.LockInPlace(t3, 6, 9);
 ```
 The result should be that only the final `6, 9` coordinates are valid; so only that piece should be visible when running the code, like so:
-<img src="Assets/grid-test2.png" width="30%" style="display: block; margin: 0 auto;" alt="The result of our grid test code: there is one red Z piece even though we tried to place it 3 times.">
+<img src="Assets/grid-test2.png" width="60%" style="display: block; margin: 0 auto;" alt="The result of our grid test code: there is one red Z piece even though we tried to place it 3 times.">
 
 ## Checking for completed lines
 Checking the lines is a simple task. We check each line and see if all cells are occupied. In this code we're only checking _if_ any lines are found, and return the total number of found lines. We're going to keep track of the completed lines so we can remove them later.
