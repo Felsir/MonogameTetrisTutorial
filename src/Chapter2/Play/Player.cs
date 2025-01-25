@@ -1,4 +1,5 @@
-﻿using Chapter2.Utils;
+﻿using Chapter2.Grid;
+using Chapter2.Utils;
 using Microsoft.Xna.Framework;
 using System;
 using System.Collections.Generic;
@@ -25,6 +26,13 @@ namespace Chapter2.Play
 
         private const int SDF = 6; //Soft Drop Factor
 
+        private enum PlayerStates
+        {
+            Playing,                // the player is in control of the piece.
+            WaitingForClearComplete // the player needs to wait for the playfield to clear the lines.
+        }
+        private PlayerStates _state;
+
         public Player(Grid.Playfield playfield)
         {
             _playfield = playfield; // assign a playfield to the player.
@@ -36,79 +44,106 @@ namespace Chapter2.Play
             _playerInput = new InputManager();
 
             GeneratePiece(); // Give the player a piece to start with.
+
+            _state = PlayerStates.Playing; // At the moment the player can immediately play!
+
+            _playfield.LinesClearedCompleteEvent += PlayfieldLinesClearedCompleteEvent; // subscribe to this event!
+        }
+
+        private void PlayfieldLinesClearedCompleteEvent(object sender, LinesClearedEventArgs e)
+        {
+            _state = PlayerStates.Playing; // the player can enjoy playing again!
         }
 
         public void Update(GameTime gameTime)
         {
             // update the state of playerinput.
             _playerInput.Update();
-            _dropTimer -= gameTime.ElapsedGameTime.TotalSeconds;
 
-            CalculateGhostPiece();
+            // update the playfield
+            _playfield.Update(gameTime);
 
-            if (_playerInput.IsPressed(Controls.Left))
+            switch (_state)
             {
-                if (_playfield.DoesShapeFitHere(_currentPiece, _x - 1, _y))
-                {
-                    _x -= 1;
-                }
-            }
+                case PlayerStates.WaitingForClearComplete:
+                    {
+                        // do nothing... just wait.
+                        break;
+                    }
 
-            if (_playerInput.IsPressed(Controls.Right))
-            {
-                if (_playfield.DoesShapeFitHere(_currentPiece, _x + 1, _y))
-                {
-                    _x += 1;
-                }
-            }
+                case PlayerStates.Playing:
+                    {
 
-            if (_playerInput.IsPressed(Controls.RotateCW))
-            {
-                _currentPiece.RotateLeft();
-                if (!_playfield.DoesShapeFitHere(_currentPiece, _x, _y))
-                {
-                    // it does not fit! Rotate it back:
-                    _currentPiece.RotateRight();
-                }
-            }
+                        _dropTimer -= gameTime.ElapsedGameTime.TotalSeconds;
 
-            if (_playerInput.IsPressed(Controls.RotateCCW))
-            {
-                _currentPiece.RotateRight();
-                if (!_playfield.DoesShapeFitHere(_currentPiece, _x, _y))
-                {
-                    // it does not fit! Rotate it back:
-                    _currentPiece.RotateLeft();
-                }
-            }
+                        CalculateGhostPiece();
 
-            if (_playerInput.IsDown(Controls.SoftDrop))
-            {
-                _dropTimer -= (SDF * _dropSpeed) * gameTime.ElapsedGameTime.TotalSeconds;
-            }
+                        if (_playerInput.IsPressed(Controls.Left))
+                        {
+                            if (_playfield.DoesShapeFitHere(_currentPiece, _x - 1, _y))
+                            {
+                                _x -= 1;
+                            }
+                        }
+
+                        if (_playerInput.IsPressed(Controls.Right))
+                        {
+                            if (_playfield.DoesShapeFitHere(_currentPiece, _x + 1, _y))
+                            {
+                                _x += 1;
+                            }
+                        }
+
+                        if (_playerInput.IsPressed(Controls.RotateCW))
+                        {
+                            _currentPiece.RotateLeft();
+                            if (!_playfield.DoesShapeFitHere(_currentPiece, _x, _y))
+                            {
+                                // it does not fit! Rotate it back:
+                                _currentPiece.RotateRight();
+                            }
+                        }
+
+                        if (_playerInput.IsPressed(Controls.RotateCCW))
+                        {
+                            _currentPiece.RotateRight();
+                            if (!_playfield.DoesShapeFitHere(_currentPiece, _x, _y))
+                            {
+                                // it does not fit! Rotate it back:
+                                _currentPiece.RotateLeft();
+                            }
+                        }
+
+                        if (_playerInput.IsDown(Controls.SoftDrop))
+                        {
+                            _dropTimer -= (SDF * _dropSpeed) * gameTime.ElapsedGameTime.TotalSeconds;
+                        }
 
 
-            if (_playerInput.IsPressed(Controls.HardDrop))
-            {
-                HardDrop();
-            }
+                        if (_playerInput.IsPressed(Controls.HardDrop))
+                        {
+                            HardDrop();
+                        }
 
-            if (_dropTimer < 0)
-            {
-                // time for this row is over, can we drop the piece?
-                if (_playfield.DoesShapeFitHere(_currentPiece, _x, _y + 1))
-                {
-                    // yes
-                    _y++;
-                }
-                else
-                {
-                    // no- lock the piece:
-                    SoftlockPiece();
-                }
+                        if (_dropTimer < 0)
+                        {
+                            // time for this row is over, can we drop the piece?
+                            if (_playfield.DoesShapeFitHere(_currentPiece, _x, _y + 1))
+                            {
+                                // yes
+                                _y++;
+                            }
+                            else
+                            {
+                                // no- lock the piece:
+                                SoftlockPiece();
+                            }
 
-                //reset the timer:
-                _dropTimer += _dropSpeed;
+                            //reset the timer:
+                            _dropTimer += _dropSpeed;
+                        }
+                        break;
+                    }
             }
         }
 
@@ -130,7 +165,10 @@ namespace Chapter2.Play
             // lock the piece onto the playfield:
             _playfield.LockInPlace(_currentPiece, _ghostX, _ghostY);
 
-            // line checking will be done later!
+            if (_playfield.ValidateField() > 0)
+            {
+                _state = PlayerStates.WaitingForClearComplete;
+            }
 
             // give the player a new piece:
             GeneratePiece();
@@ -141,7 +179,10 @@ namespace Chapter2.Play
             // lock the piece onto the playfield:
             _playfield.LockInPlace(_currentPiece, _x, _y);
 
-            // line checking will be done later!
+            if (_playfield.ValidateField() > 0)
+            {
+                _state = PlayerStates.WaitingForClearComplete;
+            }
 
             // give the player a new piece:
             GeneratePiece();
@@ -169,7 +210,11 @@ namespace Chapter2.Play
         public void Draw()
         {
             _playfield.Draw();
-            _playfield.DrawTetrimino(_currentPiece, _x, _y);
+
+            if (_state == PlayerStates.Playing)
+            {
+                _playfield.DrawTetrimino(_currentPiece, _x, _y);
+            }
         }
     }
 }

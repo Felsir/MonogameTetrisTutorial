@@ -20,6 +20,9 @@ namespace Chapter2.Grid
 
         private List<int> CompletedLines = new List<int>();
 
+        private double _lineClearTimer; // keep track of the highligh duration
+        private const double HIGHLIGHTTIME = 0.5d; // the actual duration of the highlight effect
+
         public Playfield(Vector3 position)
         {
             _position = position;
@@ -36,6 +39,19 @@ namespace Chapter2.Grid
             }
         }
 
+        public void Update(GameTime gameTime)
+        {
+            if (_lineClearTimer > 0)
+            {
+                _lineClearTimer -= gameTime.ElapsedGameTime.TotalSeconds;
+
+                if (_lineClearTimer < 0)
+                {
+                    // clear the completed lines
+                    ClearLines();
+                }
+            }
+        }
 
         public bool LockInPlace(Tetrimino.Tetrimino shape, int leftcolumn, int topline)
         {
@@ -127,6 +143,11 @@ namespace Chapter2.Grid
                 }
             }
 
+            if (CompletedLines.Count > 0)
+            {
+                _lineClearTimer = HIGHLIGHTTIME;
+            }
+
             return CompletedLines.Count;
         }
 
@@ -134,6 +155,9 @@ namespace Chapter2.Grid
         {
             foreach (int line in CompletedLines)
                 ClearLine(line);
+
+            // tell the interested objects that we've completed the line clearing sequence!
+            RaiseClearedLinesCompleteEvent(new LinesClearedEventArgs() { NumberOfClearedLines = CompletedLines.Count });
         }
 
         private void ClearLine(int y)
@@ -183,6 +207,19 @@ namespace Chapter2.Grid
                     if (!_cells[y][x].Occupied)
                         continue;
 
+                    if (_lineClearTimer > 0)
+                    {
+                        if (CompletedLines.Contains(y))
+                        {
+                            Assets.Models.DrawCube(
+                                Matrix.CreateTranslation(_position) * Matrix.CreateTranslation(x * 0.2f, -y * 0.2f, 0),
+                                Color.White * (float)(_lineClearTimer/HIGHLIGHTTIME));
+
+                            // this cube is hilighted and we can carry onto the next cube.
+                            continue;
+                        }
+                    }
+
                     Assets.Models.DrawCube(
                         Matrix.CreateTranslation(_position) * Matrix.CreateTranslation(x * 0.2f, -y * 0.2f, 0),
                         _cells[y][x].Color);
@@ -205,5 +242,14 @@ namespace Chapter2.Grid
             t.Draw(world);
         }
 
+        public event EventHandler<LinesClearedEventArgs> LinesClearedCompleteEvent;
+        protected virtual void RaiseClearedLinesCompleteEvent(LinesClearedEventArgs e)
+        {
+            EventHandler<LinesClearedEventArgs> handler = LinesClearedCompleteEvent;
+            if (handler != null)
+            {
+                handler(this, e);
+            }
+        }
     }
 }
