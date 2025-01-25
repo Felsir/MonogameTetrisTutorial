@@ -170,7 +170,7 @@ Now we can complete the `Draw()` method in the `Player` class:
 Let's add the `Update()` method in the `Player` class to execute our gameplay logic.
 
 ```csharp
-    public void Update(GameTime gt)
+    public void Update(GameTime gameTime)
     {
         // update the state of playerinput.
         _playerInput.Update();
@@ -191,13 +191,13 @@ internal class MarathonGame : IScene
     {
 
         private Player _player;
-        private Grid.Playfield _playfield;
+        private Playfield _playfield;
 
         public MarathonGame() 
         { 
             // The playfield's origin is topleft:
             // The playfield is 2 units wide and 4 units high; so -1,2,0 puts the playfield in the center of our view. 
-            _playfield = new Grid.Playfield(new Vector3(-1f,2f,0));
+            _playfield = new Playfield(new Vector3(-1f,2f,0));
 
             // Create a player and assing the playfield object:
             _player=new Player(_playfield);
@@ -215,7 +215,7 @@ internal class MarathonGame : IScene
         }
     }
 ```
-Now if we change the lines in `GameRoot` to push a `MarathonGame` instead of the title, we should be greeted with a playfield, ready for the player!
+Now if we change the lines in `GameRoot` to push a `MarathonGame` instead of the previous test scene, we should be greeted with a playfield, ready for the player!
 
 ## Move the piece
 Now we can see the results of our work, time to make things move.
@@ -243,25 +243,27 @@ Rotation is slightly different, we rotate the piece: test if it fits, if it does
 ```csharp
     if(_playerInput.IsPressed(Controls.RotateCW))
     {
-        _currentPiece.RotateLeft()
+        _currentPiece.RotateLeft();
         if(!_playfield.DoesShapeFitHere(_currentPiece, _x, _y))
         {
             // it does not fit! Rotate it back:
-            _currentPiece.RotateRight()
+            _currentPiece.RotateRight();
         }
     }
 
     if(_playerInput.IsPressed(Controls.RotateCCW))
     {
-        _currentPiece.RotateRight()
+        _currentPiece.RotateRight();
         if(!_playfield.DoesShapeFitHere(_currentPiece, _x, _y))
         {
             // it does not fit! Rotate it back:
-            _currentPiece.RotateLeft()
+            _currentPiece.RotateLeft();
         }
     }
 ``` 
-Now, run the code and you should be able to move the piece left to right and rotate it!
+Now, run the code and you should be able to move the (random) piece left to right and rotate it!
+
+<img src="Assets/2-movement01.gif" width="60%" style="display: block; margin: 0 auto;" alt="A piece moves left and right and rotates">
 
 The softdrop and harddrop are bit different, first the soft drop:
 
@@ -285,7 +287,7 @@ public void Update(GameTime gameTime)
     }
 }
 
-private void SoftLock()
+private void SoftlockPiece()
 {
     // lock the piece onto the playfield:
     _playfield.LockInPlace(_currentPiece, _x, _y);
@@ -297,6 +299,8 @@ private void SoftLock()
 }
 ```
 Keep in mind, there is more to moving the piece downwards so we're going to change this code soon. For now, this should give you the option to stack tetriminoes.
+
+<img src="Assets/2-movement02.gif" width="60%" style="display: block; margin: 0 auto;" alt="pieces are moved down by pressing the down key- once a piece reaches the bottom, a new piece appears">
 
 Onwards to the hard drop. The hard drop is a shortcut where the piece instantly moves to the lowest possible position. In Tetris there is a concept called the *ghost piece*[^3]. This a preview where the tetrimino would land given if it were to drop. We achieve two aims at once: calculate where we would visualize the ghost piece and determine the hard drop location of a piece.
 
@@ -344,14 +348,15 @@ private void HardDrop()
 }
 ```
 
-Now, the player controls for a basic game is complete! Don't worry- we'll get to the line clearing soon! Run the code to see the result.
+Now, the player controls for a basic game is complete! Don't worry- we'll get to the line clearing soon! Run the code to see the result:
+
+<img src="Assets/2-movement03.gif" width="60%" style="display: block; margin: 0 auto;" alt="pieces are moved- the harddrop feature is demonstrated">
 
 ## Drop and Gravity
 In Tetris the concept of a piece dropping automatically is called drop which is expressed in *gravity*. The drop speed increases for each level. Lucky for us, Tetris is well documented and the calculation is known. The formula is for the time the terimino spends per row is as follows:
 
-```math
-Time = (0.8-((Level-1)*0.007))^(Level-1)
-```
+Time = (0.8-((Level-1)*0.007))<sup>(Level-1)</sup>
+
 
 We want to know when to drop the piece automatically in `double`- because the `GameTime` returns values in doubles. Implementing this in our `Player` class:
 ```csharp
@@ -401,7 +406,7 @@ In the next code section we're going to implement automatic drop:
             else
             {
                 // no- lock the piece:
-                SoftLock();
+                SoftlockPiece();
             }
 
             //reset the timer:
@@ -423,11 +428,13 @@ A revised version of the softdrop code in the `Update()` loop looks like this:
 ```csharp
     if(_playerInput.IsDown(Controls.SoftDrop))
     {
-        _droptimer -= (SDF * _dropspeed) * gt.ElapsedGameTime.TotalSeconds;
+        _dropTimer -= (SDF * _dropSpeed) * gameTime.ElapsedGameTime.TotalSeconds;
     }
 ```
 Notice that `IsPressed` is replaced by `IsDown`! The whole locking logic is replaced because it is handled by the autodrop.
 
-If you run the game, you should be able to stack pieces! You will run into an `Exception` when "topping out" because we haven't implemented the game over state yet. 
+If you run the game, you should be able to stack pieces! You will run into an `Exception` when "topping out" because we haven't implemented the game over state yet.
+
+<img src="Assets/2-movement04.gif" width="60%" style="display: block; margin: 0 auto;" alt="pieces are moved- pieces move down at a steady pace. Both hard and soft drops are shown">
 
 In the next tutorial line checking and game states will be added!

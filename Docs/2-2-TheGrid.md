@@ -143,15 +143,15 @@ The leftcolumn and the topline are the top left corner of the piece.
 ```
 
 ## Putting it together!
-Time to see the results! Let's make a quick test to show a few pieces in a grid! So let's start with our `Gameplay` class! We're going to generate 3 Tetriminoes and lock them into a few arbitraty chose places!
+Time to see the results! Let's make a quick test to show a few pieces in a grid! So let's start with our `TestScene` class to demonstrate the playfield. We're going to generate 3 Tetriminoes and lock them into a few arbitraty chose places!
 
 ```csharp
-    internal class GameScene : IScene
+    internal class TestScene : IScene
     {
 
         private Grid.Playfield _playfield;
 
-        public GameScene()
+        public TestScene()
         {
             // The playfield's origin is topleft:
             // The playfield is 2 units wide and 4 units high; so -1,2,0 puts the playfield in the center of our view. 
@@ -235,7 +235,7 @@ An important task is to actually know if the piece the player controls can go wh
 ```
 
 ### Testing the code
-Replace the lines in the `GameScene` class so instead of locking t3 directly into place, we're adding 3 attempts:
+Replace the lines in the `TestScene` class so instead of locking t3 directly into place, we're adding 3 attempts:
 ```csharp
             _playfield.LockInPlace(t1, 3, 4);
             _playfield.LockInPlace(t2, 6, 7);
@@ -324,7 +324,7 @@ So while we have detected the lines, let's add the method to clean up those line
 ## Test clearing those lines!
 Right, let's complete this section by showing that it works!
 
-First change the code in `GameScene` so we have a completed line in our grid:
+First change the code in `TestScene` so we have a completed line in our grid:
 ```csharp
             Tetrimino.Tetrimino t1 = factory.Generate(Enums.Tetriminoes.O);
             Tetrimino.Tetrimino t2 = factory.Generate(Enums.Tetriminoes.L);
