@@ -15,7 +15,7 @@ This tutorial (or "how did he do this?") aims to reproduce the game. The ruleset
 2. Gameplay
    * [Tetriminoes](Docs/2-1-Tetriminos.md)
    * [The Grid](Docs/2-2-TheGrid.md)
-   * Movement of pieces
+   * [Movement of pieces](Docs/2-3-MovingPieces.md)
    * Clearing lines
    * Sourcecode for Chapter 2
 
