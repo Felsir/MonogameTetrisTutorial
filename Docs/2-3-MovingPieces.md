@@ -438,3 +438,6 @@ If you run the game, you should be able to stack pieces! We haven't implemented 
 <img src="Assets/2-movement04.gif" width="60%" style="display: block; margin: 0 auto;" alt="pieces are moved- pieces move down at a steady pace. Both hard and soft drops are shown">
 
 In the next tutorial line checking and game states will be added!
+
+#### Continue
+Next step: [Checking the Lines](2-4-CheckingLines.md)

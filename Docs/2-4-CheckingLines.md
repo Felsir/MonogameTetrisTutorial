@@ -172,7 +172,7 @@ This third option is where events shine. By using events, we can decouple the pl
 
 In the next section, we'll explore how to implement this approach.
 
-### Event parameters
+### The Lines Cleared Event
 The playfield will tell any class that is interested that lines were cleared. A special class is introduced with event arguments. Add the class `LinesClearedEventArgs` like so:
 ```csharp
     public class LinesClearedEventArgs : EventArgs
@@ -194,6 +194,7 @@ In the `Playfield` class, add the following code to enable us to raise the event
     }
 ```
 
+### Raising the event
 If we now add this code to the `ClearLines()` method:
 ```csharp
     public void ClearLines()
@@ -206,6 +207,7 @@ If we now add this code to the `ClearLines()` method:
     }
 ```
 
+### Reacting to the raised event
 Okay, we have everything in place to implement our mini pause in the gameplay. Here we go, all in the `Player` class:
 
 ```csharp
@@ -296,3 +298,6 @@ Almost there! A big change is incoming in the `Update()` method. A `switch` stat
 There we go! The game now has better gameplay with a bit of *juice* added!
 
 <img src="Assets/2-lineclear02.gif" width="60%" style="display: block; margin: 0 auto;" alt="lines clear with a nice effect- the gameplay pauses until the lines are cleared">
+
+#### Continue
+Next step: [Finishing Touches](2-5-FinishingTouches.md)

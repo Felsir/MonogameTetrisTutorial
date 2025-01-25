@@ -344,3 +344,6 @@ Now let's check the lines and clear them, add this right below the previous code
 ```
 
 This concludes all we need from the grid!
+
+#### Continue
+Next step: [Moving the Pieces](2-3-MovingPieces.md).

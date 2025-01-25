@@ -10,14 +10,15 @@ This tutorial (or "how did he do this?") aims to reproduce the game. The ruleset
    * [Game Engine basics](Docs/1-1-GameEngineBasics.md)
    * [3D basics](Docs/1-2-ThreeDeeBasics.md)
    * [The cube- our basis for the shapes](Docs/1-3-TheCube.md)
-   * [Sourcecode for Chapter 1](https://github.com/Felsir/MonogameTetrisTutorial/tree/main/src)
+   * [Sourcecode for Chapter 1](https://github.com/Felsir/MonogameTetrisTutorial/tree/main/src/Chapter1)
 
 2. Gameplay
    * [Tetriminoes](Docs/2-1-Tetriminos.md)
    * [The Grid](Docs/2-2-TheGrid.md)
    * [Movement of pieces](Docs/2-3-MovingPieces.md)
-   * Clearing lines
-   * Sourcecode for Chapter 2
+   * [Clearing lines](Docs/2-4-CheckingLines.md)
+   * [Finishing Touches](Docs/2-5-FinishingTouches.md)
+   * [Sourcecode for Chapter 2](https://github.com/Felsir/MonogameTetrisTutorial/tree/main/src/Chapter2)
 
 3. Advanced Gameplay
    * Lockdown
