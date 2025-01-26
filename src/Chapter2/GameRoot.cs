@@ -48,6 +48,7 @@ namespace Chapter2
             _spriteBatch = new SpriteBatch(GraphicsDevice);
 
             Models.Initialize(Content);
+            Art.Initialize(Content);
 
             SceneManager = new SceneManager();
 
@@ -88,6 +89,10 @@ namespace Chapter2
         protected override void Draw(GameTime gameTime)
         {
             GraphicsDevice.Clear(Color.Black);
+
+            GraphicsDevice.BlendState = BlendState.Opaque;
+            GraphicsDevice.DepthStencilState = DepthStencilState.Default;
+            GraphicsDevice.RasterizerState = RasterizerState.CullCounterClockwise;
 
             SceneManager.Draw(_spriteBatch, gameTime);
 

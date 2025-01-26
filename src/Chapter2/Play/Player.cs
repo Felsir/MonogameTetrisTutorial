@@ -1,4 +1,5 @@
 ﻿using Chapter2.Grid;
+using Chapter2.Tetrimino;
 using Chapter2.Utils;
 using Microsoft.Xna.Framework;
 using System;
@@ -21,15 +22,23 @@ namespace Chapter2.Play
         private int _x, _y; // position of the current piece
         private int _ghostX, _ghostY; // position of the ghost piece
 
-        public int Level = 1;
+        public int Level = 1; // To track the current level
+        public int Lines = 0; // To track the number of lines this player has completed
+        public int Score = 0;
+
         private double _dropSpeed, _dropTimer;
 
         private const int SDF = 6; //Soft Drop Factor
 
+        // Event handlers
+        public event EventHandler<LevelIncreasedEventArgs> LevelIncreasedEvent;
+        public event EventHandler<ScoreAwardedEventArgs> ScoreAwardedEvent;
+
         private enum PlayerStates
         {
-            Playing,                // the player is in control of the piece.
-            WaitingForClearComplete // the player needs to wait for the playfield to clear the lines.
+            Playing,                 // the player is in control of the piece.
+            WaitingForClearComplete, // the player needs to wait for the playfield to clear the lines.
+            GameOver                 // the player has messed up, no new piece can be spawned.
         }
         private PlayerStates _state;
 
@@ -53,6 +62,38 @@ namespace Chapter2.Play
         private void PlayfieldLinesClearedCompleteEvent(object sender, LinesClearedEventArgs e)
         {
             _state = PlayerStates.Playing; // the player can enjoy playing again!
+
+            // Score is based on what the level _was_ before the lines were added.
+            switch (e.NumberOfClearedLines)
+            {
+                case 1:
+                    AwardScore(100 * Level);
+                    break;
+                case 2:
+                    AwardScore(300 * Level);
+                    break;
+                case 3:
+                    AwardScore(500 * Level);
+                    break;
+                case 4:
+                    AwardScore(800 * Level);
+                    break;
+            }
+
+            // Lines were completed so increase the count and check if the difficulty must be increased:
+            Lines += e.NumberOfClearedLines;
+
+            CheckLevel(Lines);
+        }
+
+        public void AwardScore(int value)
+        {
+            if(value==0) 
+                return; //prevent unneeded events. (hhey perhaps negative score is possible in your game!)
+
+            Score += value;
+
+            RaiseScoreAwardedEvent(new ScoreAwardedEventArgs() { Score = Score, Increment=value });
         }
 
         public void Update(GameTime gameTime)
@@ -165,6 +206,9 @@ namespace Chapter2.Play
             // lock the piece onto the playfield:
             _playfield.LockInPlace(_currentPiece, _ghostX, _ghostY);
 
+            //award score:
+            AwardScore(2 * (_ghostY - _y));
+
             if (_playfield.ValidateField() > 0)
             {
                 _state = PlayerStates.WaitingForClearComplete;
@@ -199,12 +243,58 @@ namespace Chapter2.Play
             return Math.Pow((0.8d - (level - 1) * 0.007d), (level - 1));
         }
 
+        private void CheckLevel(int lines)
+        {
+            int lvl = (lines / 10) + 1; // there is no level 0, so we +1 for this.
+
+            if (lvl <= Level)
+                return; // we're at the same or higher level.
+
+            // Level should increase!
+            Level = lvl;
+
+            // Update settings that are tied to the level.
+            _dropSpeed = CalculateDropSpeed(Level); // what is the timing for the current level?
+            _dropTimer = _dropSpeed; // set the starting value. 
+
+            // notify others something interesting has happened:
+            RaiseLevelIncreasedEvent(new LevelIncreasedEventArgs() { Level = lvl });
+        }
+
+        protected virtual void RaiseLevelIncreasedEvent(LevelIncreasedEventArgs e)
+        {
+            EventHandler<LevelIncreasedEventArgs> handler = LevelIncreasedEvent;
+            if (handler != null)
+            {
+                handler(this, e);
+            }
+        }
+
+        protected virtual void RaiseScoreAwardedEvent(ScoreAwardedEventArgs e)
+        {
+            EventHandler<ScoreAwardedEventArgs> handler = ScoreAwardedEvent;
+            if (handler != null)
+            {
+                handler(this, e);
+            }
+        }
 
         private void GeneratePiece()
         {
             _currentPiece = _pieceFactory.GenerateRandom();
             _x = 5;
             _y = -2; //yes, the piece actually starts above the playfield.
+
+            if (!_playfield.DoesShapeFitHere(_currentPiece, _x, _y))
+            {
+                // an new Tetrimono doesn't fit here! 
+                GameOver();
+            }
+        }
+
+        public void GameOver()
+        {
+            _state = PlayerStates.GameOver;
         }
 
         public void Draw()

@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Chapter2.Assets;
 
 namespace Chapter2
 {
@@ -17,6 +18,8 @@ namespace Chapter2
         private Player _player;
         private Playfield _playfield;
 
+        private int _level, _lines, _score;
+
         public MarathonGame()
         {
             // The playfield's origin is topleft:
@@ -25,6 +28,32 @@ namespace Chapter2
 
             // Create a player and assing the playfield object:
             _player = new Player(_playfield);
+
+            // Notify me when the level increases:
+            _level = _player.Level;
+            _lines = _player.Lines;
+
+            // We're interested in these events, when does the level increase? 
+            _player.LevelIncreasedEvent += PlayerLevelIncreasedEvent;
+            // Does the player score lines?
+            _playfield.LinesClearedCompleteEvent += PlayfieldLinesClearedCompleteEvent;
+            _player.ScoreAwardedEvent += PlayerScoreAwardedEvent;
+        }
+
+        private void PlayerScoreAwardedEvent(object sender, ScoreAwardedEventArgs e)
+        {
+            _score = e.Score;
+            //maybe you want to show the increments as a nice effect somewhere? Now is your chance!
+        }
+
+        private void PlayfieldLinesClearedCompleteEvent(object sender, LinesClearedEventArgs e)
+        {
+            _lines += e.NumberOfClearedLines;
+        }
+
+        private void PlayerLevelIncreasedEvent(object sender, LevelIncreasedEventArgs e)
+        {
+            _level=e.Level;
         }
 
         public void Update(GameTime gameTime)
@@ -35,7 +64,14 @@ namespace Chapter2
 
         public void Draw(SpriteBatch spriteBatch, GameTime gameTime)
         {
+            
             _player.Draw();
+
+            spriteBatch.Begin();
+            spriteBatch.DrawString(Art.GameFont,string.Format("Level: {0}", _level.ToString("00")), new Vector2(100,100),Color.White);
+            spriteBatch.DrawString(Art.GameFont, string.Format("Lines: {0}", _lines.ToString("000")), new Vector2(100, 135), Color.White);
+            spriteBatch.DrawString(Art.GameFont, string.Format("Score: {0}", _score.ToString("000000")), new Vector2(100, 170), Color.White);
+            spriteBatch.End();
         }
     }
 }
