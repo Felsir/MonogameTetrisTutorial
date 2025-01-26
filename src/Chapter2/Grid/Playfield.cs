@@ -23,6 +23,9 @@ namespace Chapter2.Grid
         private double _lineClearTimer; // keep track of the highligh duration
         private const double HIGHLIGHTTIME = 0.5d; // the actual duration of the highlight effect
 
+        // Event handlers
+        public event EventHandler<LinesClearedEventArgs> LinesClearedCompleteEvent;
+
         public Playfield(Vector3 position)
         {
             _position = position;
@@ -117,8 +120,7 @@ namespace Chapter2.Grid
             //all checks came out clear, so it fits!
             return true;
         }
-
-
+        
 
         public int ValidateField()
         {
@@ -242,7 +244,15 @@ namespace Chapter2.Grid
             t.Draw(world);
         }
 
-        public event EventHandler<LinesClearedEventArgs> LinesClearedCompleteEvent;
+        public void DrawGhostTetrimino(Tetrimino.Tetrimino t, int column, int row)
+        {
+            Matrix world = Matrix.CreateTranslation(_position) *
+                        Matrix.CreateTranslation(column * 0.2f, -row * 0.2f, 0);
+
+            t.Draw(world,0.4f);
+        }
+
+
         protected virtual void RaiseClearedLinesCompleteEvent(LinesClearedEventArgs e)
         {
             EventHandler<LinesClearedEventArgs> handler = LinesClearedCompleteEvent;

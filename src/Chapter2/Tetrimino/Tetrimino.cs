@@ -54,7 +54,7 @@ namespace Chapter2.Tetrimino
             }
         }
 
-        public void Draw(Matrix world)
+        public void Draw(Matrix world, float alpha=1)
         {
             for (int y = 0; y < CurrentShape.shapeBit.Length; y++)
             {
@@ -72,6 +72,7 @@ namespace Chapter2.Tetrimino
 
                             GameRoot.BasicEffect.World = Matrix.CreateTranslation(0.2f * x, 0.2f * -y, 0) * world ;
                             GameRoot.BasicEffect.DiffuseColor = Color.ToVector3();
+                            GameRoot.BasicEffect.Alpha = alpha;
                         }
                         m.Draw();
                     }

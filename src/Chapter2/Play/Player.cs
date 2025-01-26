@@ -33,6 +33,8 @@ namespace Chapter2.Play
         // Event handlers
         public event EventHandler<LevelIncreasedEventArgs> LevelIncreasedEvent;
         public event EventHandler<ScoreAwardedEventArgs> ScoreAwardedEvent;
+        public event EventHandler<GameOverEventArgs> GameOverEvent;
+        
 
         private enum PlayerStates
         {
@@ -112,6 +114,13 @@ namespace Chapter2.Play
                         break;
                     }
 
+                case PlayerStates.GameOver:
+                    {
+                        // do nothing... just wait.
+                        // this should be handled by the Gameplay scene.
+                        break;
+                    }
+
                 case PlayerStates.Playing:
                     {
 
@@ -158,6 +167,11 @@ namespace Chapter2.Play
                         if (_playerInput.IsDown(Controls.SoftDrop))
                         {
                             _dropTimer -= (SDF * _dropSpeed) * gameTime.ElapsedGameTime.TotalSeconds;
+
+                            if (_dropTimer < 0)
+                            {
+                                AwardScore(1);
+                            }
                         }
 
 
@@ -204,7 +218,10 @@ namespace Chapter2.Play
         private void HardDrop()
         {
             // lock the piece onto the playfield:
-            _playfield.LockInPlace(_currentPiece, _ghostX, _ghostY);
+            if (!_playfield.LockInPlace(_currentPiece, _ghostX, _ghostY))
+            {
+                GameOver();
+            }
 
             //award score:
             AwardScore(2 * (_ghostY - _y));
@@ -221,7 +238,10 @@ namespace Chapter2.Play
         private void SoftlockPiece()
         {
             // lock the piece onto the playfield:
-            _playfield.LockInPlace(_currentPiece, _x, _y);
+            if (!_playfield.LockInPlace(_currentPiece, _x, _y))
+            {
+                GameOver();
+            }
 
             if (_playfield.ValidateField() > 0)
             {
@@ -279,10 +299,19 @@ namespace Chapter2.Play
             }
         }
 
+        protected virtual void RaiseGameOverEvent(GameOverEventArgs e)
+        {
+            EventHandler<GameOverEventArgs> handler = GameOverEvent;
+            if (handler != null)
+            {
+                handler(this, e);
+            }
+        }
+
         private void GeneratePiece()
         {
             _currentPiece = _pieceFactory.GenerateRandom();
-            _x = 5;
+            _x = 4;
             _y = -2; //yes, the piece actually starts above the playfield.
 
             if (!_playfield.DoesShapeFitHere(_currentPiece, _x, _y))
@@ -295,6 +324,7 @@ namespace Chapter2.Play
         public void GameOver()
         {
             _state = PlayerStates.GameOver;
+            RaiseGameOverEvent(new GameOverEventArgs() { Level = Level, Score = Score, Lines = Lines });
         }
 
         public void Draw()
@@ -304,6 +334,7 @@ namespace Chapter2.Play
             if (_state == PlayerStates.Playing)
             {
                 _playfield.DrawTetrimino(_currentPiece, _x, _y);
+                _playfield.DrawGhostTetrimino(_currentPiece, _ghostX,_ghostY);
             }
         }
     }

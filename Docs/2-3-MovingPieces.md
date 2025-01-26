@@ -130,8 +130,8 @@ internal class Player
     private void GeneratePiece()
     {
         _currentPiece = _pieceFactory.GenerateRandom();
-        _x=5;
-        _y=-2; //yes, the piece actually starts above the playfield.
+        _x = 4;
+        _y = -2; //yes, the piece actually starts above the playfield.
     }
 }
 ```

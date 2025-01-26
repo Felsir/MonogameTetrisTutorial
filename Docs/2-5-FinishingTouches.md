@@ -148,6 +148,7 @@ Anyway, run the code and enjoy the increased difficulty!
 Playing Tetris can be a zen-like experience, however it can still be a competitive game! Various game modes exist where the goal is to score as many points as possible.
 
 Tetris scoring rules for the basic game is quite simple[^1]:
+[^1]: There are bonus points for difficult manouvres such as T-spins, perfect clears and combos. Implementation of these is left as a excercise to the reader! ;-)
 
 |Action|	Points|
 |:------:|---------:|
@@ -158,19 +159,133 @@ Tetris scoring rules for the basic game is quite simple[^1]:
 |Softdrop| 1 per cell|
 |Harddrop| 2 per cell|
 
-So let's add these rules:
+So let's add these rules, in the `PlayfieldLinesClearedCompleteEvent`:
 ```csharp
+    private void PlayfieldLinesClearedCompleteEvent(object sender, LinesClearedEventArgs e)
+    {
+        _state = PlayerStates.Playing; // the player can enjoy playing again!
 
+        // Score is based on what the level _was_ before the lines were added.
+        switch (e.NumberOfClearedLines)
+        {
+            case 1:
+                AwardScore(100 * Level);
+                break;
+            case 2:
+                AwardScore(300 * Level);
+                break;
+            case 3:
+                AwardScore(500 * Level);
+                break;
+            case 4:
+                AwardScore(800 * Level);
+                break;
+        }
+
+        // Lines were completed so increase the count and check if the difficulty must be increased:
+        Lines += e.NumberOfClearedLines;
+
+        CheckLevel(Lines);
+    }
 ```
 
-[^1]: There are bonus points for difficult manouvres such as T-spins, perfect clears and combos. Implementation of these is left as a excercise to the reader! ;-)
+I added a separate (again event) for the scores in the `AwardScore()` method. This way a gameplay scene (like the `MarathonGame` class) can deal with the scores as well. Perhaps you want to have a character shout cool stuff if the player scores massive points. 
+```csharp
+    public event EventHandler<ScoreAwardedEventArgs> ScoreAwardedEvent;
+
+    public void AwardScore(int value)
+    {
+        if(value==0) 
+            return; //prevent unneeded events. (hhey perhaps negative score is possible in your game!)
+
+        Score += value;
+
+        RaiseScoreAwardedEvent(new ScoreAwardedEventArgs() { Score = Score, Increment=value });
+    }
+
+    protected virtual void RaiseScoreAwardedEvent(ScoreAwardedEventArgs e)
+    {
+        EventHandler<ScoreAwardedEventArgs> handler = ScoreAwardedEvent;
+        if (handler != null)
+        {
+            handler(this, e);
+        }
+    }
+```
+The `ScoreAwardedEventArgs` class:
+```csharp
+    internal class ScoreAwardedEventArgs
+    {
+        public int Increment;
+        public int Score;
+    }
+```
+See if you can figure out how the hard and softdrop scores are awarded, and check the sourcecode of chapter 2 for the way I solved that.
 
 ## Game Over Man!
 Once the top of the grid is reached... nothing happens. That can't be right!
 
-The game should end when a new piece no longer can fit in the area
+The game is over if a piece cannot be placed. So let's add this to the `Player` class:
+
+```csharp
+    public void GameOver()
+    {
+        _state = PlayerStates.GameOver;
+        RaiseGameOverEvent(new GameOverEventArgs() { Level = Level, Score = Score, Lines = Lines });
+    }
+
+    protected virtual void RaiseGameOverEvent(GameOverEventArgs e)
+    {
+        EventHandler<GameOverEventArgs> handler = GameOverEvent;
+        if (handler != null)
+        {
+            handler(this, e);
+        }
+    }
+```
+We check the if the piece can be placed:
+
+```csharp
+    private void HardDrop()
+    {
+        // lock the piece onto the playfield:
+        if (!_playfield.LockInPlace(_currentPiece, _ghostX, _ghostY))
+        {
+            GameOver();
+        }
+
+        // ..
+    }
+
+    private void SoftlockPiece()
+    {
+        // lock the piece onto the playfield:
+        if (!_playfield.LockInPlace(_currentPiece, _x, _y))
+        {
+            GameOver();
+        }
+
+        // ..
+    }
+```
 
 ## The ghost piece
-You probably have noticed that a misplaced drop can happen to anyone. It is easier to see where a piece ends up, if we would draw the ghost piece as well.
+You probably have noticed that a misplaced drop can happen to anyone. It is easier to see where a piece ends up, if we would draw the ghost piece as well. Considering we have the `_ghostX` and `_ghostY` coordinates already, drawing the piece is trivial. Note that the `BasicEffect` has a parameter that sets the Alpha channel.
+Set the `GraphicsDevice` in the `GameRoot` to:
+```csharp
+    GraphicsDevice.BlendState = BlendState.AlphaBlend;
+```
+Next add a `DrawGhostTetrimino` to the `Playfield` class where the alpha is controlled in the effect:
+```csharp
+    GameRoot.BasicEffect.Alpha = alpha;
+```
+
+If you put everything in this chapter together, you should be able to play the game like this!
+
+<img src="Assets/2-finaltouches.gif" width="60%" style="display: block; margin: 0 auto;" alt="A nice game of Tetris, with score and game over state">
+
+Check the [sourcecode here](../src/Chapter2/).
+
+If you are ready to dive into the rabbithole that is Tetris acronyms, I'll cover some details in the next chapter soon!
 
 

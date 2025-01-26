@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Graphics.PackedVector;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -28,6 +29,7 @@ namespace Chapter2.Assets
                     part.Effect = GameRoot.BasicEffect;
                     GameRoot.BasicEffect.World = world;
                     GameRoot.BasicEffect.DiffuseColor = color.ToVector3();
+                    GameRoot.BasicEffect.Alpha = 1;
                 }
                 m.Draw();
             }

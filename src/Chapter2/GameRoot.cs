@@ -90,7 +90,7 @@ namespace Chapter2
         {
             GraphicsDevice.Clear(Color.Black);
 
-            GraphicsDevice.BlendState = BlendState.Opaque;
+            GraphicsDevice.BlendState = BlendState.AlphaBlend;
             GraphicsDevice.DepthStencilState = DepthStencilState.Default;
             GraphicsDevice.RasterizerState = RasterizerState.CullCounterClockwise;
 
