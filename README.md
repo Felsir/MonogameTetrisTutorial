@@ -21,8 +21,8 @@ This tutorial (or "how did he do this?") aims to reproduce the game. The ruleset
    * [Sourcecode for Chapter 2](https://github.com/Felsir/MonogameTetrisTutorial/tree/main/src/Chapter2)
 
 3. Advanced Gameplay
-   * Lockdown
    * The 7-Bag
+   * Lockdown
    * Preview Queue
    * Wallkicks (or: Super Rotation System - SRS)
    * Sourcecode for Chapter 3
