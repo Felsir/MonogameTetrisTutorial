@@ -1,10 +1,10 @@
 # The 7 Bag
 If you have played the game from the code, you will notice the randomness of the pieces isn't always fun. In some games you'll get a bunch of Z pieces and no I pieces[^1]. To counter this, the concept of the "Seven Bag" was introduced in the Tetris Guideline[^2].
 
-The Seven Bag is a virtual bag where the 7 tetrimino pieces are thrown in and a random piece is drawn from the bag. The bag is empties first before a new set of the 7 pieces is thrown in the bag. 
+The Seven Bag is a virtual bag where the 7 tetrimino pieces are thrown in and a random piece is drawn from the bag. The bag is emptied first before a new set of the 7 pieces is thrown in the bag. 
 
 ## Implementation
-The bag is implemented as a `List`. We simply draw a piece from a random index in the list, the item is then removed from the list, until the list is empty. The empty list is simply filled again with all 7 pieces.
+The bag is implemented as a `List`. We draw a piece from a random index in the list, remove it, and repeat until the list is empty. Once empty, the list is refilled with all 7 pieces.
 
 The random generator is implemented in the `TetriminoFactory` class, by reimplementing the `GenerateRandom` function:
 ```csharp
