@@ -79,4 +79,4 @@ With these variables, the code in the `Update()` loop where the softlock is dete
 
 if you run the game now, notice how you can still move the piece for half a second before it locks in place! The first half of the mechanism is done!
 
--to be continued
+The only thing left to do is to *count* every valid move under `_lockDelayMode` and reset the `_lockDelayTimer`.

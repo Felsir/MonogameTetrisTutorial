@@ -31,9 +31,9 @@ namespace Chapter3.Play
         private const int SDF = 6; //Soft Drop Factor
 
         // Lock Delay parameters
-        public double _lockDelayTimer; // The current lock delay time.
-        public int _lockDelayMoveCounter; // The count of the current moves while under lock delay.
-        public bool _lockDelayMode=false; // Keep track if the current piece is in delay mode.
+        private double _lockDelayTimer; // The current lock delay time.
+        private int _lockDelayMoveCounter; // The count of the current moves while under lock delay.
+        private bool _lockDelayMode=false; // Keep track if the current piece is in delay mode.
 
         private const int LOCKRESETS = 15; // total number of allowed moves during lock delay.
         private const double LOCKDELAYTIME = 0.5d; // lock delay time setting

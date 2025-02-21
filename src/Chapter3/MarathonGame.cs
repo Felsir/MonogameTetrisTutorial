@@ -88,12 +88,6 @@ namespace Chapter3
             spriteBatch.DrawString(Art.GameFont, string.Format("Lines: {0}", _lines.ToString("000")), new Vector2(100, 135), Color.White);
             spriteBatch.DrawString(Art.GameFont, string.Format("Score: {0}", _score.ToString("000000")), new Vector2(100, 170), Color.White);
 
-            spriteBatch.DrawString(Art.GameFont, string.Format("LDT: {0}", _player._lockDelayTimer.ToString("0.000")), new Vector2(100, 300), Color.White);
-            spriteBatch.DrawString(Art.GameFont, string.Format("LDC: {0}", _player._lockDelayMoveCounter.ToString("00")), new Vector2(100, 335), Color.White);
-            spriteBatch.DrawString(Art.GameFont, string.Format("LD: {0}", _player._lockDelayMode.ToString()), new Vector2(100, 370), Color.White);
-
-
-
             if (_state == MarathonStates.GameOver)
             {
                 spriteBatch.DrawString(Art.GameFont, "- G A M E   O V E R -", new Vector2(100, 220), Color.White);
