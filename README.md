@@ -22,7 +22,7 @@ This tutorial (or "how did he do this?") aims to reproduce the game. The ruleset
 
 3. Advanced Gameplay
    * [The 7-Bag](Docs/3-1-TheSevenBag.md)
-   * Lockdown
+   * [Lock delay](Docs/3-2-Lockdelay.md)
    * Preview Queue
    * Wallkicks (or: Super Rotation System - SRS)
    * [Sourcecode for Chapter 3](https://github.com/Felsir/MonogameTetrisTutorial/tree/main/src/Chapter3)

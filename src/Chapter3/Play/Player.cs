@@ -30,6 +30,13 @@ namespace Chapter3.Play
 
         private const int SDF = 6; //Soft Drop Factor
 
+        // Lock Delay parameters
+        private double _lockDelayTimer; // The current lock delay time.
+        private int _lockDelayMoveCounter; // The count of the current moves while under lock delay.
+        private bool _lockDelayMode=false; // Keep track if the current piece is in delay mode.
+
+        private const int LOCKRESETS = 15; // total number of allowed moves during lock delay.
+        private const double LOCKDELAYTIME = 0.5d;
         // Event handlers
         public event EventHandler<LevelIncreasedEventArgs> LevelIncreasedEvent;
         public event EventHandler<ScoreAwardedEventArgs> ScoreAwardedEvent;
@@ -180,23 +187,59 @@ namespace Chapter3.Play
                             HardDrop();
                         }
 
-                        if (_dropTimer < 0)
+                        if (!_lockDelayMode)
                         {
-                            // time for this row is over, can we drop the piece?
+                            // regular dropping mode.
+                            if (_dropTimer < 0)
+                            {
+                                // time for this row is over, can we drop the piece?
+                                if (_playfield.DoesShapeFitHere(_currentPiece, _x, _y + 1))
+                                {
+                                    // yes
+                                    _y++;
+                                }
+                                else
+                                {
+                                    // Should the piece lock immediately?
+                                    if (_lockDelayMoveCounter >= LOCKRESETS)
+                                    {
+                                        // yes, we're run out of moves.
+                                        SoftlockPiece();
+                                    }
+                                    else
+                                    {
+                                        // start the lock delay mode:
+                                        _lockDelayMode = true;
+                                        _lockDelayTimer = LOCKDELAYTIME;
+                                    }
+                                }
+
+                                //reset the timer:
+                                _dropTimer += _dropSpeed;
+                            }
+                        }
+                        else
+                        {
+                            // Lock delay mode.
+                            _lockDelayTimer -= gameTime.ElapsedGameTime.TotalSeconds;
+
+                            // could the piece move down?
                             if (_playfield.DoesShapeFitHere(_currentPiece, _x, _y + 1))
                             {
-                                // yes
-                                _y++;
+                                // yes, we are no longer in Lock Delay! The piece can move downwards.
+                                _lockDelayMode = false;
+                                _dropTimer = _dropSpeed;
                             }
                             else
                             {
-                                // no- lock the piece:
-                                SoftlockPiece();
+                                if (_lockDelayTimer < 0)
+                                {
+                                    //the timer has run out, the piece should now soft lock.
+                                    SoftlockPiece();
+                                }
                             }
-
-                            //reset the timer:
-                            _dropTimer += _dropSpeed;
                         }
+
                         break;
                     }
             }
@@ -213,6 +256,25 @@ namespace Chapter3.Play
             {
                 _ghostY++;
             }
+        }
+
+        private bool MoveLockDelay()
+        {
+            if(_lockDelayMode==false)
+                return true; // when NOT in lock delay mode, all moves are permitted.
+
+            // We're in lock delay mode:
+
+            if(_lockDelayMoveCounter>=LOCKRESETS)
+            {
+                return false; // all moves were exhausted.
+            }
+
+            // allow this move, but increase the counter.
+            _lockDelayMoveCounter++;
+            // reset the delay timer.
+            _lockDelayTimer=LOCKDELAYTIME;
+            return true;
         }
 
         private void HardDrop()
@@ -319,6 +381,9 @@ namespace Chapter3.Play
                 // an new Tetrimono doesn't fit here! 
                 GameOver();
             }
+
+            // a new piece clears the lock delay resets.
+            _lockDelayMoveCounter=0;
         }
 
         public void GameOver()
