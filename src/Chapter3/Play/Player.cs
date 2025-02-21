@@ -31,12 +31,12 @@ namespace Chapter3.Play
         private const int SDF = 6; //Soft Drop Factor
 
         // Lock Delay parameters
-        private double _lockDelayTimer; // The current lock delay time.
-        private int _lockDelayMoveCounter; // The count of the current moves while under lock delay.
-        private bool _lockDelayMode=false; // Keep track if the current piece is in delay mode.
+        public double _lockDelayTimer; // The current lock delay time.
+        public int _lockDelayMoveCounter; // The count of the current moves while under lock delay.
+        public bool _lockDelayMode=false; // Keep track if the current piece is in delay mode.
 
         private const int LOCKRESETS = 15; // total number of allowed moves during lock delay.
-        private const double LOCKDELAYTIME = 0.5d;
+        private const double LOCKDELAYTIME = 0.5d; // lock delay time setting
         // Event handlers
         public event EventHandler<LevelIncreasedEventArgs> LevelIncreasedEvent;
         public event EventHandler<ScoreAwardedEventArgs> ScoreAwardedEvent;
@@ -133,13 +133,14 @@ namespace Chapter3.Play
 
                         _dropTimer -= gameTime.ElapsedGameTime.TotalSeconds;
 
-                        CalculateGhostPiece();
-
                         if (_playerInput.IsPressed(Controls.Left))
                         {
                             if (_playfield.DoesShapeFitHere(_currentPiece, _x - 1, _y))
                             {
                                 _x -= 1;
+
+                                if (_lockDelayMode)
+                                    LockDelayReset();
                             }
                         }
 
@@ -148,6 +149,9 @@ namespace Chapter3.Play
                             if (_playfield.DoesShapeFitHere(_currentPiece, _x + 1, _y))
                             {
                                 _x += 1;
+
+                                if (_lockDelayMode)
+                                    LockDelayReset();
                             }
                         }
 
@@ -159,6 +163,11 @@ namespace Chapter3.Play
                                 // it does not fit! Rotate it back:
                                 _currentPiece.RotateRight();
                             }
+                            else
+                            {
+                                if (_lockDelayMode)
+                                    LockDelayReset();
+                            }
                         }
 
                         if (_playerInput.IsPressed(Controls.RotateCCW))
@@ -169,7 +178,16 @@ namespace Chapter3.Play
                                 // it does not fit! Rotate it back:
                                 _currentPiece.RotateLeft();
                             }
+                            else
+                            {
+                                if (_lockDelayMode)
+                                    LockDelayReset();
+                            }
+
                         }
+
+                        // horizontal moves and rotates are done, check the ghost piece (before we drop it!)
+                        CalculateGhostPiece();
 
                         if (_playerInput.IsDown(Controls.SoftDrop))
                         {
@@ -223,21 +241,24 @@ namespace Chapter3.Play
                             // Lock delay mode.
                             _lockDelayTimer -= gameTime.ElapsedGameTime.TotalSeconds;
 
-                            // could the piece move down?
-                            if (_playfield.DoesShapeFitHere(_currentPiece, _x, _y + 1))
+
+                            if (_lockDelayTimer < 0 || _lockDelayMoveCounter >= LOCKRESETS || _dropTimer<0)
                             {
-                                // yes, we are no longer in Lock Delay! The piece can move downwards.
+                                //the timer has run out, the piece should now soft lock.
+                                //or, the number of moves have exceeded.
                                 _lockDelayMode = false;
-                                _dropTimer = _dropSpeed;
-                            }
-                            else
-                            {
-                                if (_lockDelayTimer < 0)
+
+                                if (_playfield.DoesShapeFitHere(_currentPiece, _x, _y + 1))
                                 {
-                                    //the timer has run out, the piece should now soft lock.
+                                    // yes, the piece can move downwards.
+                                    _dropTimer = _dropSpeed;
+                                }
+                                else
+                                {
                                     SoftlockPiece();
                                 }
                             }
+
                         }
 
                         break;
@@ -258,23 +279,12 @@ namespace Chapter3.Play
             }
         }
 
-        private bool MoveLockDelay()
+        private void LockDelayReset()
         {
-            if(_lockDelayMode==false)
-                return true; // when NOT in lock delay mode, all moves are permitted.
-
-            // We're in lock delay mode:
-
-            if(_lockDelayMoveCounter>=LOCKRESETS)
-            {
-                return false; // all moves were exhausted.
-            }
-
-            // allow this move, but increase the counter.
+            // increase the counter
             _lockDelayMoveCounter++;
             // reset the delay timer.
-            _lockDelayTimer=LOCKDELAYTIME;
-            return true;
+            _lockDelayTimer = LOCKDELAYTIME;
         }
 
         private void HardDrop()

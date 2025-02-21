@@ -56,21 +56,24 @@ With these variables, the code in the `Update()` loop where the softlock is dete
         // Lock delay mode.
         _lockDelayTimer -= gameTime.ElapsedGameTime.TotalSeconds;
 
-        // could the piece move down?
-        if (_playfield.DoesShapeFitHere(_currentPiece, _x, _y + 1))
+
+        if (_lockDelayTimer < 0 || _lockDelayMoveCounter >= LOCKRESETS || _dropTimer<0)
         {
-            // yes, we are no longer in Lock Delay! The piece can move downwards.
+            //the timer has run out, the piece should now soft lock.
+            //or, the number of moves have exceeded.
             _lockDelayMode = false;
-            _dropTimer = _dropSpeed;
-        }
-        else
-        {
-            if (_lockDelayTimer < 0)
+
+            if (_playfield.DoesShapeFitHere(_currentPiece, _x, _y + 1))
             {
-                //the timer has run out, the piece should now soft lock.
+                // yes, the piece can move downwards.
+                _dropTimer = _dropSpeed;
+            }
+            else
+            {
                 SoftlockPiece();
             }
         }
+
     }
 ```
 
